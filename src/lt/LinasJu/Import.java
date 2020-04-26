@@ -1,4 +1,3 @@
 package lt.LinasJu;
 
-public class Import {
-}
+public class Import {}

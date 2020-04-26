@@ -1,4 +1,3 @@
 package lt.LinasJu;
 
-public class Export {
-}
+public class Export {}
