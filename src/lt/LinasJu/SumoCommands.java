@@ -13,7 +13,7 @@ public enum SumoCommands {
     SumoCommands(final String command) {
         this.command = command;
     }
-    
+
     @Override
     public String toString() {
         return command;
