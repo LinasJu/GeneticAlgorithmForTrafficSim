@@ -6,8 +6,8 @@ public enum FilesSuffixesEnum {
     EDGES(".edg.xml"),
     NETWORK(".net.xml"),
     ROUTES("rou.xml"),
-    SUMO_CFG(".sumocfg"),
-
+    SUMO_CFG(".sumocfg");
+    //todo papildyti kitais reikiamais extensionais
 
 
     private final String suffix;
