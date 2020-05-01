@@ -40,7 +40,20 @@ public enum NetworkGenerationCommands {
   RAND_NEIGHBOR_DISTANCE_5(RAND.toString().concat(".neighbor-dist5=")), // float needed
   RAND_NEIGHBOR_DISTANCE_6(RAND.toString().concat(".neighbor-dist6=")), // float needed
 
-  DEFAULT_TYPE_OF_JUNCTION("--default-junction-type-option"); // optional parameter for all networks
+  DEFAULT_TYPE_OF_JUNCTION(" --default-junction-type-option"), // optional parameter for all networks
+
+  //output options
+  OUTPUT_PREFIX_TIME(" --output-prefix TIME"),
+  PRECISION_NUMBER_AFTER_COMMA(" --precision"), //integer needed, default 2
+  HUMAN_READABLE_TIME(" --human-readable-time true"),
+  EASIER_NODE_READABILITY(" --alphanumerical-ids true"),
+
+  //building defaults
+  LANE_NUMBER(" --default.lanenumber "), //integer needed
+  LANE_WIDTH(" --default.lanewidth "), //float needed
+  SPEED(" -S "), //float needed
+  EDGE_TYPE(" --default.type "); // string needed
+
 
   private final String command;
 

@@ -1,0 +1,137 @@
+first of all: install SUMO and python.
+
+1. extract desired map part from Open Street Map
+
+2. convert OSM to SUMO-specific network
+    cmd: netconvert –osm-files zemelapis.osm -o network_file.net.xml
+
+3. random routes for network with randomTrips.py  (--fringe-factor The option --fringe-factor <FLOAT> increases the probability that trips will start/end at the fringe of the network. If the value 10 is given, edges that have no successor or no predecessor will be 10 times more likely to be chosen as start- or endpoint of a trip.):
+    cmd: py “C:\Program Files (x86)\Eclipse\Sumo\tools”\randomTrips.py -n network_file.net.xml -r keliai.rou.xml -e 50 -l --fringe-factor 10
+
+4. setup sumo configuration file(configuration_file.sumocfg)
+    file: 
+        <configuration>
+        <input>
+            <net-file value="network_file.net.xml"/>
+            <route-files value="keliai.rou.xml"/>
+        </input>
+        <time>
+            <begin value ="0"/>
+            <end value="2000"/>
+        </time>
+        </configuration>
+
+5. run configuration.sumocfg for sumo-gui
+    cmd: configuration.sumocfg
+
+6. output commands for different output files:
+    1) Sumo Floating Car Data (FCD) Trace File (outputs location, speed, vehicle angle, position, lane for every car at every time step):
+        cmd: sumo -c configuration_file.sumocfg --fcd-output sumoTrace.xml
+
+    2) Raw vehicle positions dump (contains every edge, lane, vehicle positions, speeds, for each simulation step): 
+        cmd: sumo -c configuration_file.sumocfg --netstate-dump dump_file.xml
+
+    3) Emission Output (CO2, CO, HC, NOX, fuel, electricity, noise, emitted by the vehicle in the actual simulation step):
+        cmd: sumo -c configuration_file.sumocfg --emission-output emission_file.xml
+
+    4) Full Output (dumps every information contained in the network, including emission, position, speed, lane, etc.) (long computing time and size >>GB's):
+        cmd: sumo -c configuration_file.sumocfg --full-output full_output.xml
+
+    5) SUMO Lane change Output (which vehicles, when and why changed lanes):
+        cmd: sumo -c configuration_file.sumocfg --lanechange-output lane_change_file.xml
+
+    6) SUMO VTK Output (generates Files in the well known VTK (Visualization Toolkit) format, to show the positions the speed value for every vehicle):
+        cmd: sumo -c configuration_file.sumocfg --vtk-output vkt_file.xml
+
+
+instead of step 3., it is possible to generate trip and route with Origin-Destination matrix.
+3.1.    make TAZ (Traffic assignment zone) file (TAZ_file.taz.xml)
+        TAZ_file.taz.xml:
+        
+        <additional>
+        <tazs>
+            <taz id="1" egdes="tazEdgeId"> <!-- edge names from SUMO network-->
+            </taz>
+            <taz id="2" egdes="tazEdgeId">
+            </taz>
+            <taz id="3" egdes="tazEdgeId">
+            </taz>
+            <taz id="4" egdes="tazEdgeId">
+            </taz>
+            <taz id="5" egdes="tazEdgeId">
+            </taz>
+            <taz id="6" egdes="tazEdgeId">
+            </taz>
+            ...<!--not mandatory to use all of edges from network-->
+        </tazs>
+        </additional>
+
+3.2.    make origin-destination matrix file (od_file.od)
+        OD_file.od:
+
+        $O;D2
+        * From-time To-time
+        0.00 1.00
+        * Factor
+        1.00
+        *
+        * __Comments__
+        *   from x (taz id) edge to y (taz id) edge z vehicles
+        *x y z
+        1   3   10
+        4   2   10
+        *...
+
+3.3.    make od2trip.config file (od2trip_config.xml)
+        od2trips.config.xml:    
+        
+        <configuration>
+        <input>
+            <taz-file value="TAZ_file.taz.xml"/>
+            <od-matrix-files value="OD_file.od"/>
+        </input>
+        </configuration>
+
+3.4     run trip generation from OD matrix command:
+        cmd: od2trips -c od2trips.config.xml -n taz_file.taz.xml -d OD_file.od -o od_file.odtrips.xml
+
+3.5.    make duarouter.config file (duarouter_config.trips2routes.duarcfg)
+        duarcfg_file.trips2routes.duarcfg:
+
+        <configuration>
+        <!-- the duarouter configuration file takes as input _network_ and the _OD trips_ files and outputs the route file -->
+
+            <input>
+                <net-file value="network_file.net.xml"/> <!-- SUMO network file -->
+                <route-files value="od_file.odtrips.xml"/> <!-- SUMO OD trips file -->
+            </input>
+
+            <!-- optional
+            <output>
+                <output-file value="od_route_file.odtrips.rou.xml"/>  
+            </output>
+            optional-->
+
+            <report>
+                <xml-validation value="never"/>
+                <no-step-log value="true"/>
+            </report>
+
+        </configuration>
+
+3.6     run duarouter for route shortest lenght path assignment:
+        cmd: duarouter -c duarcfg_file.trips2routes.duarcfg -o od_route_file.odtrips.rou.xml
+
+Then, changes 4 step sumocfg file: 
+4. setup sumo configuration file(configuration_file.sumocfg)
+    file: 
+        <configuration>
+        <input>
+            <net-file value="network_file.net.xml"/>
+            <route-files value="od_route_file.odtrips.rou.xml"/>
+        </input>
+        <time>
+            <begin value ="0"/>
+            <end value="2000"/>
+        </time>
+        </configuration>

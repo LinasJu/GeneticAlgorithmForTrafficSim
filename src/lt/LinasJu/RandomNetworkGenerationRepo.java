@@ -9,9 +9,9 @@ public class RandomNetworkGenerationRepo {
 
     public static String TIME_FORMAT = "yyyy.MM.dd.HH.mm.ss";
 
-    public void generateRandomNetwork(String savingFolder) {
+
+    public void generateRandomNetwork(String savingFolder, Date timeOfCreation) {
         RunCmdCommandsRepo runCmd = new RunCmdCommandsRepo();
-        Date timeOfCreation = new Date();
 
         Runtime rt = Runtime.getRuntime();
         PrintWriter writer = runCmd.startCmdOnLocation(rt, savingFolder);
