@@ -1,20 +1,14 @@
 package lt.LinasJu;
 
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
 import java.util.Objects;
-import java.util.Random;
-import java.util.StringJoiner;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
-public class RunCmdCommandsRepo {
+public class CmdRepo {
 
-
-  public PrintWriter startCmdOnLocation(Runtime rt, String location) {
+  public PrintWriter startCmd(String location) {
+    Runtime rt = Runtime.getRuntime();
     Process process = null;
     try {
       process = rt.exec("cmd");
@@ -29,7 +23,13 @@ public class RunCmdCommandsRepo {
     return stdin;
   }
 
-  public void closePrintWriter(PrintWriter printWriter) {
-    printWriter.close();
+  public void runCommand(PrintWriter writer, String command) {
+    writer.println(command);
+    writer.close();
+  }
+
+  public void runCommands(PrintWriter writer, List<String> commands) {
+   commands.forEach(writer::println);
+   writer.close();
   }
 }

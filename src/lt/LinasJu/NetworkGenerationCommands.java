@@ -54,7 +54,6 @@ public enum NetworkGenerationCommands {
   SPEED(" -S "), //float needed
   EDGE_TYPE(" --default.type "); // string needed
 
-
   private final String command;
 
   NetworkGenerationCommands(final String command) {

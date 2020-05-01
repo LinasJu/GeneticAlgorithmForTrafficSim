@@ -8,14 +8,16 @@ public class Main {
   public static float speedConvertionConstant = 3.6f;
 
   public static void main(String[] args) {
-    RandomNetworkGenerationRepo generator = new RandomNetworkGenerationRepo();
+    GenerationRepo generator = new GenerationRepo();
 
     Date fileName = new Date();
     //1. generating random road network
     generator.generateRandomNetwork(TEMP_EXPORT_LOCATION_OF_GENERATED_NETWORK, fileName);
     /*for (int i = 0; i< 100; i++) {
-      generator.generateRandomNetwork(TEMP_EXPORT_LOCATION_OF_GENERATED_NETWORK);
+      generator.generateRandomNetwork(TEMP_EXPORT_LOCATION_OF_GENERATED_NETWORK, fileName);
     }*/
+
+
 
   }
 }
