@@ -6,14 +6,14 @@ First of all: install SUMO and Python.
     cmd: netconvert –osm-files zemelapis.osm -o network_file.net.xml
 
 3. random routes for network with randomTrips.py  (--fringe-factor The option --fringe-factor <FLOAT> increases the probability that trips will start/end at the fringe of the network. If the value 10 is given, edges that have no successor or no predecessor will be 10 times more likely to be chosen as start- or endpoint of a trip.):
-    cmd: py “C:\Program Files (x86)\Eclipse\Sumo\tools”\randomTrips.py -n network_file.net.xml -r keliai.rou.xml -e 50 -l --fringe-factor 10
+    cmd: py “C:\Program Files (x86)\Eclipse\Sumo\tools”\randomTrips.py -n network_file.net.xml -r roads.rou.xml -e 50 -l --fringe-factor 10
 
 4. setup sumo configuration file(configuration_file.sumocfg)
     file: 
         <configuration>
         <input>
             <net-file value="network_file.net.xml"/>
-            <route-files value="keliai.rou.xml"/>
+            <route-files value="roads.rou.xml"/>
         </input>
         <time>
             <begin value ="0"/>

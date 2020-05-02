@@ -7,7 +7,11 @@ import java.util.Objects;
 
 public class CmdRepo {
 
-  public PrintWriter startCmd(String location) {
+  /**
+   * @param location run cmd at desired location
+   * @return cmd at desired location
+   */
+  private PrintWriter startCmd(String location) {
     Runtime rt = Runtime.getRuntime();
     Process process = null;
     try {
@@ -23,13 +27,24 @@ public class CmdRepo {
     return stdin;
   }
 
-  public void runCommand(PrintWriter writer, String command) {
+  /**
+   * @param location run cmd at desired location
+   * @param command run command at desired location in cmd
+   */
+  public void runCommand(String location, String command) {
+    PrintWriter writer = startCmd(location);
     writer.println(command);
-    writer.close();
+    writer.flush();
   }
 
-  public void runCommands(PrintWriter writer, List<String> commands) {
-   commands.forEach(writer::println);
-   writer.close();
+
+  /**
+   * @param location run cmd at desired location
+   * @param commands run commands at desired location in cmd
+   */
+  public void runCommands(String location, List<String> commands) {
+    PrintWriter writer = startCmd(location);
+    commands.forEach(writer::println);
+    writer.flush();
   }
 }
