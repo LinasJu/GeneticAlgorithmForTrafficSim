@@ -13,8 +13,8 @@ public enum FilesSuffixesEnum {
     OD_TRIPS(".odtrips" + XML.toString()),
     OD2TRIPS(".od2trips_config" + XML.toString()),
 
-    DUAROUTER_CONFIGURATION(".trips2routes.duarcfg "),
-    SUMO_CONFIGURATION(".sumocfg ");
+    DUAROUTER_CONFIGURATION(".trips2routes.duarcfg"),
+    SUMO_CONFIGURATION(".sumocfg");
 
     private final String suffix;
 

@@ -28,23 +28,26 @@ public class CmdRepo {
   }
 
   /**
+   * function used if cmd is required to launch separately
    * @param location run cmd at desired location
    * @param command run command at desired location in cmd
    */
   public void runCommand(String location, String command) {
     PrintWriter writer = startCmd(location);
     writer.println(command);
-    writer.flush();
+    writer.close();
   }
 
+  /** @param commands run commands at desired location in cmd */
+  public void runCommands(PrintWriter cmd, List<String> commands) {
+    commands.forEach(
+        command -> {
+          cmd.println(command);
+          cmd.flush();
+        });
+  }
 
-  /**
-   * @param location run cmd at desired location
-   * @param commands run commands at desired location in cmd
-   */
-  public void runCommands(String location, List<String> commands) {
-    PrintWriter writer = startCmd(location);
-    commands.forEach(writer::println);
-    writer.flush();
+  public PrintWriter startCmdAtLocation(String location) {
+    return startCmd(location);
   }
 }
