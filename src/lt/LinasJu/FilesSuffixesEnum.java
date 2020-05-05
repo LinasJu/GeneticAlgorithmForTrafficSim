@@ -11,7 +11,7 @@ public enum FilesSuffixesEnum {
     NETWORK(".net" + XML.toString()),
     ROUTES(".rou" + XML.toString()),
 
-    TAZ(".taz"+ XML.toString()),
+    TAZ(".taz" + XML.toString()),
     OD(".od"),
     OD_TRIPS(".odtrips" + XML.toString()),
     OD2TRIPS(".od2trips_config" + XML.toString()),

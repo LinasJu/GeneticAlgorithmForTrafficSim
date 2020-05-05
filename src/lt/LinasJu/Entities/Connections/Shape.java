@@ -5,7 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class EdgeShape {
+public class Shape {
     private Float x;
     private Float y;
+    private Float z;
 }

@@ -17,7 +17,7 @@ public class Edge implements Serializable {
     private String type; //from typ.xml
     private Integer numLanes; //(1 to n)
     private Float speed; //max edge speed in m/s
-    private List<EdgeShape> shapePoints; //optional
+    private List<Shape> shapePoints; //optional
     private String spreadType; //optional
     private String width; //optional
     private List<String> allow; //optional

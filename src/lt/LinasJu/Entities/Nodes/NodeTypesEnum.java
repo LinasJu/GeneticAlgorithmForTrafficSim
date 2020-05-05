@@ -1,4 +1,4 @@
-package lt.LinasJu;
+package lt.LinasJu.Entities.Nodes;
 
 /**
  * Node Connection types from http://sumo.sourceforge.net/userdoc/Networks/PlainXML.html#node_types
