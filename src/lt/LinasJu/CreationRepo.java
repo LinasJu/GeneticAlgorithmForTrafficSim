@@ -1,6 +1,7 @@
 package lt.LinasJu;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,7 +9,8 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class CreationRepo {
-  CmdRepo cmd = new CmdRepo();
+
+  public static String RANDOM_TRIPS_LOCATION = "\"C:\\Program Files (x86)\\Eclipse\\Sumo\\tools\"";
 
   public String generateRandomNetwork(String fileName) {
     String outputFileName =
@@ -83,7 +85,7 @@ public class CreationRepo {
     if (fringeFactor != null) {
       command = command.concat("--fringe-factor " + fringeFactor.toString());
     }
-    command = command.concat("-r " + outputFile + "-e 50 -l ");
+    command = command.concat("-r " + outputFile + "-e 5000 -l ");
 
     return command;
   }
@@ -116,8 +118,6 @@ public class CreationRepo {
 
   /**
    * this method is used, if network file name and route file names are the same (without suffixes)
-   *
-   * @param networkFileName
    */
   public void createSumoConfigFile(String workingDir, String networkFileName) {
     createSumoConfigFile(workingDir, networkFileName, networkFileName, null, null);
@@ -133,7 +133,7 @@ public class CreationRepo {
                 FilesSuffixesEnum.ROUTES
                     .toString()); // todo jei output file name yra kitoks nei networkFileName
     beginValue = beginValue != null ? beginValue : 0;
-    endValue = endValue != null ? endValue : 4000;
+    endValue = endValue != null ? endValue : 2000;
 
     return Arrays.asList(
         "<configuration>",
@@ -148,8 +148,8 @@ public class CreationRepo {
         "</configuration>");
   }
 
-  public String generateOutputFile(String fileName, SumoOutputDataFilesEnum outputEnum) {
-    String outputfile = fileName.concat(outputEnum.getFileEndWithSuffix());
+  public String generateOutputCommand(String fileName, SumoOutputDataFilesEnum outputEnum) {
+    String outputfile = fileName.concat(outputEnum.getFileEndWithSuffixXml());
     fileName = fileName.concat(FilesSuffixesEnum.SUMO_CONFIGURATION.toString());
     return SumoCommandsEnum.SUMO
         .toString()
@@ -159,10 +159,42 @@ public class CreationRepo {
         .concat(outputfile);
   }
 
-  public List<String> generateOutputFiles(
+  public List<String> getOutputCommands(
       String fileName, List<SumoOutputDataFilesEnum> outputEnums) {
     List<String> commands = new ArrayList<>();
-    outputEnums.forEach(outputEnum -> commands.add(generateOutputFile(fileName, outputEnum)));
+    outputEnums.forEach(outputEnum -> commands.add(generateOutputCommand(fileName, outputEnum)));
     return commands;
+  }
+
+  public void createInputFiles(
+      PrintWriter cmd, String workingDir, String fileName, boolean isImportedNetwork) {
+
+    if (!isImportedNetwork) {
+      cmd.println(generateRandomNetwork(fileName)); // 1. generate random road network file
+      cmd.flush();
+    }
+
+    cmd.println(
+        generateRandomRoutes(
+            RANDOM_TRIPS_LOCATION, fileName)); // 2. create random routes from network file
+    cmd.flush();
+
+    createSumoConfigFile(workingDir, fileName); // 3. setup SUMO configuration file
+  }
+
+  public void getSimulationOutputData(PrintWriter cmd, String fileName, List<SumoOutputDataFilesEnum> outputDataFilesEnums) {
+    List<String> outputs = getOutputCommands(fileName, outputDataFilesEnums); // 4. generate output
+    outputs.forEach(
+        output -> {
+          cmd.println(output);
+          cmd.flush();
+        });
+  }
+
+  //used for editing. generates nodes, edges, connections, traffic light logic and type of edges files
+  public void generatePlainOutputOfNetwork(PrintWriter cmd, String fileName) {
+    cmd.println(SumoCommandsEnum.NETCONVERT.toString() + String.format(SumoCommandsEnum.SUMO_NET_FILE_INPUT.toString(), fileName + FilesSuffixesEnum.NETWORK.toString()) +
+            SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.toString() + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd());
+    cmd.flush();
   }
 }

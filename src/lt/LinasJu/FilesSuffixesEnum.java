@@ -5,6 +5,9 @@ public enum FilesSuffixesEnum {
     XML(".xml "),
     NODES(".nod" + XML.toString()),
     EDGES(".edg" + XML.toString()),
+    CONNECTIONS(".con" + XML.toString()),
+    TRAFFIC_LIGHT_LOGICS(".tll" + XML.toString()),
+    TYPE_OF_EDGES(".typ" + XML.toString()),
     NETWORK(".net" + XML.toString()),
     ROUTES(".rou" + XML.toString()),
 

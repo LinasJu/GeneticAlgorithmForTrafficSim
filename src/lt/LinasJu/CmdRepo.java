@@ -24,6 +24,7 @@ public class CmdRepo {
     new Thread(new SyncPipe(process.getInputStream(), System.out)).start();
     PrintWriter stdin = new PrintWriter(process.getOutputStream());
     stdin.println("cd " + location);
+    stdin.flush();
     return stdin;
   }
 
