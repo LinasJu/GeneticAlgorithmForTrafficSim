@@ -2,6 +2,7 @@ package lt.LinasJu.Entities.Nodes;
 
 import lombok.Getter;
 import lombok.Setter;
+import lt.LinasJu.Entities.TrafficLightLogic.TrafficLightAlgorithmType;
 
 import java.io.Serializable;
 

@@ -1,8 +1,9 @@
-package lt.LinasJu.Entities.Nodes;
+package lt.LinasJu.Entities.TrafficLightLogic;
 
 public enum TrafficLightAlgorithmType {
     STATIC("static"),
-    ACTUATED("actuated");
+    ACTUATED("actuated"),
+    DELAY_BASED("delay_based");
 
     private final String algorithmType;
 
