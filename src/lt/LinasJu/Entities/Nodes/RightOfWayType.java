@@ -1,5 +1,6 @@
 package lt.LinasJu.Entities.Nodes;
 
+//https://sumo.dlr.de/userdoc/Networks/PlainXML.html#right-of-way
 public enum RightOfWayType {
     DEFAULT("default"),
     EDGE_PRIORITY("edgePriority");

@@ -1,8 +1,6 @@
 package lt.LinasJu.Entities.Nodes;
 
-/**
- * Node Connection types from http://sumo.sourceforge.net/userdoc/Networks/PlainXML.html#node_types
- */
+//Node Connection types from https://sumo.dlr.de/userdoc/Networks/PlainXML.html#node_types
 public enum NodeTypesEnum {
     PRIORITY("priority"),
     TRAFFIC_LIGHT("traffic_light"),
@@ -13,8 +11,8 @@ public enum NodeTypesEnum {
     ALLWAY_STOP("allway_stop"),
     RAIL_SIGNAL("rail_signal"),
     ZIPPER("zipper"),
-    RAIL_CROSSING("traffic_light_right_on_red"),
-    TRAFFIC_LIGHT_RIGHT_ON_RED("rail_crossing");
+    RAIL_CROSSING("rail_crossing"),
+    TRAFFIC_LIGHT_RIGHT_ON_RED("traffic_light_right_on_red");
 
     private final String nodeType;
 
