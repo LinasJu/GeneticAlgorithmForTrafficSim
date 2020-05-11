@@ -1,4 +1,4 @@
-package lt.LinasJu.Entities.Types;
+package lt.LinasJu.Entities.TypeOfEdge;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 //https://sumo.dlr.de/userdoc/SUMO_edge_type_file.html#syntax
-public class TypeOfEdge {
+public class Type {
     private String id;
     private List<String> allow;
     private List<String> disallow;

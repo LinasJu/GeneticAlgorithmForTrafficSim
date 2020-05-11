@@ -2,6 +2,7 @@ package lt.LinasJu;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -11,7 +12,7 @@ public class CmdRepo {
      * @param location run cmd at desired location
      * @return cmd at desired location
      */
-    private PrintWriter startCmd(String location) {
+    private List<Object> startCmd(String location) {
         Runtime rt = Runtime.getRuntime();
         Process process = null;
         try {
@@ -25,7 +26,7 @@ public class CmdRepo {
         PrintWriter stdin = new PrintWriter(process.getOutputStream());
         stdin.println("cd " + location);
         stdin.flush();
-        return stdin;
+        return Arrays.asList(stdin, process);
     }
 
     /**
@@ -35,9 +36,16 @@ public class CmdRepo {
      * @param command  run command at desired location in cmd
      */
     public void runCommand(String location, String command) {
-        PrintWriter writer = startCmd(location);
+        List<Object> objects = startCmd(location);
+        PrintWriter writer = (PrintWriter) objects.get(0);
         writer.println(command);
         writer.close();
+        Process process = (Process) objects.get(1);
+        try {
+            process.waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -51,7 +59,7 @@ public class CmdRepo {
                 });
     }
 
-    public PrintWriter startCmdAtLocation(String location) {
+    public List<Object> startCmdAtLocation(String location) {
         return startCmd(location);
     }
 }

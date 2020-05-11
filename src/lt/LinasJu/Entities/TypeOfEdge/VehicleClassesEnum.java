@@ -1,4 +1,4 @@
-package lt.LinasJu.Entities.Types;
+package lt.LinasJu.Entities.TypeOfEdge;
 
 //https://sumo.dlr.de/userdoc/Definition_of_Vehicles,_Vehicle_Types,_and_Routes.html#abstract_vehicle_class
 public enum VehicleClassesEnum {

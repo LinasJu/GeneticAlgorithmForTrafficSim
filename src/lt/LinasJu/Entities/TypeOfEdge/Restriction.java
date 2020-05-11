@@ -1,4 +1,4 @@
-package lt.LinasJu.Entities.Types;
+package lt.LinasJu.Entities.TypeOfEdge;
 
 import lombok.Getter;
 import lombok.Setter;

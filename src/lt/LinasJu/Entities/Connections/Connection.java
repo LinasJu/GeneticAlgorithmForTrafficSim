@@ -3,7 +3,7 @@ package lt.LinasJu.Entities.Connections;
 import lombok.Getter;
 import lombok.Setter;
 import lt.LinasJu.Entities.Nodes.ShapePoint;
-import lt.LinasJu.Entities.Types.VehicleClassesEnum;
+import lt.LinasJu.Entities.TypeOfEdge.VehicleClassesEnum;
 
 import java.io.Serializable;
 import java.util.List;
