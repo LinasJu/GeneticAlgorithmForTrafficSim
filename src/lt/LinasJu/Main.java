@@ -1,5 +1,6 @@
 package lt.LinasJu;
 
+import lt.LinasJu.Entities.Nodes.Node;
 import org.w3c.dom.Document;
 
 import java.io.*;
@@ -50,6 +51,7 @@ public class Main {
         String nodeFileName = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd() + FilesSuffixesEnum.NODES.toString();
         Document nodeDocument = xmlRepo.readXml(nodeFileName);
         Map<String, List<Map<String, Object>>> nodesAttributes = parserRepo.parseDocumentToObjects(nodeDocument);
+        List<Node> nodes = parserRepo.getNodesFromNodesAttributes(nodesAttributes);
 
         String edgeFileName = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd() + FilesSuffixesEnum.EDGES.toString();
         Document edgefile = xmlRepo.readXml(edgeFileName);

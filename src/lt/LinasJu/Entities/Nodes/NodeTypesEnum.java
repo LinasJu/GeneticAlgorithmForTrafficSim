@@ -1,5 +1,8 @@
 package lt.LinasJu.Entities.Nodes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 //Node Connection types from https://sumo.dlr.de/userdoc/Networks/PlainXML.html#node_types
 public enum NodeTypesEnum {
     PRIORITY("priority"),
@@ -23,5 +26,25 @@ public enum NodeTypesEnum {
     @Override
     public String toString() {
         return nodeType;
+    }
+
+    //****** Reverse Lookup Implementation************//
+
+    //Lookup table
+    private static final Map<String, NodeTypesEnum> lookup = new HashMap<>();
+
+    //Populate the lookup table on loading time
+    static
+    {
+        for(NodeTypesEnum env : NodeTypesEnum.values())
+        {
+            lookup.put(env.toString(), env);
+        }
+    }
+
+    //This method can be used for reverse lookup purpose
+    public static NodeTypesEnum get(String url)
+    {
+        return lookup.get(url);
     }
 }
