@@ -43,8 +43,8 @@ public enum NodeTypesEnum {
     }
 
     //This method can be used for reverse lookup purpose
-    public static NodeTypesEnum get(String url)
+    public static NodeTypesEnum get(String label)
     {
-        return lookup.get(url);
+        return lookup.get(label);
     }
 }

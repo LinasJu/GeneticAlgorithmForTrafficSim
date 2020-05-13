@@ -1,5 +1,6 @@
 package lt.LinasJu;
 
+import lt.LinasJu.Entities.Edges.Edge;
 import lt.LinasJu.Entities.Nodes.Node;
 import org.w3c.dom.Document;
 
@@ -48,14 +49,15 @@ public class Main {
         cmd.close();
         process.waitFor();
 
-        String nodeFileName = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd() + FilesSuffixesEnum.NODES.toString();
-        Document nodeDocument = xmlRepo.readXml(nodeFileName);
-        Map<String, List<Map<String, Object>>> nodesAttributes = parserRepo.parseDocumentToObjects(nodeDocument);
-        List<Node> nodes = parserRepo.getNodesFromNodesAttributes(nodesAttributes);
+//        String nodeFileName = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd() + FilesSuffixesEnum.NODES.toString();
+//        Document nodeDocument = xmlRepo.readXml(nodeFileName);
+//        Map<String, List<Map<String, Object>>> nodesAttributes = parserRepo.parseDocumentToObjects(nodeDocument);
+//        List<Node> nodes = parserRepo.getNodesFromNodesAttributes(nodesAttributes);
 
         String edgeFileName = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd() + FilesSuffixesEnum.EDGES.toString();
-        Document edgefile = xmlRepo.readXml(edgeFileName);
-        Map<String, List<Map<String, Object>>> edgeAttributes = parserRepo.parseDocumentToObjects(edgefile);
+        Document edgeDocument = xmlRepo.readXml(edgeFileName);
+        Map<String, List<Map<String, Object>>> edgeAttributes = parserRepo.parseDocumentToObjects(edgeDocument);
+        List<Edge> edges = parserRepo.getEdgesFromEdgesAttributes(edgeAttributes);
 
         String typeFileName = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd() + FilesSuffixesEnum.TYPE_OF_EDGES.toString();
         Document typeDocument = xmlRepo.readXml(typeFileName);
