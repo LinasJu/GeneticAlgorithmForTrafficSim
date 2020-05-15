@@ -9,10 +9,10 @@ import java.util.List;
 @Setter
 //https://sumo.dlr.de/userdoc/Simulation/Traffic_Lights.html#phase62_attributes
 public class Phase {
-    private Integer duration;
+    private Long duration;
     private List<SignalStateEnum> states; //https://sumo.dlr.de/userdoc/Simulation/Traffic_Lights.html#default_link_indices
-    private Integer minDur;
-    private Integer maxDur;
+    private Long minDur;
+    private Long maxDur;
     private String name;
     private List<Integer> next;
 }

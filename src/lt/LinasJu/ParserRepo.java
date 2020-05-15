@@ -1,21 +1,28 @@
 package lt.LinasJu;
 
+import lt.LinasJu.Entities.Connections.Connection;
 import lt.LinasJu.Entities.Edges.Edge;
 import lt.LinasJu.Entities.Edges.Lane;
+import lt.LinasJu.Entities.Edges.Roundabout;
 import lt.LinasJu.Entities.Edges.SpreadTypeEnum;
 import lt.LinasJu.Entities.Nodes.NodeTypesEnum;
 import lt.LinasJu.Entities.Nodes.ShapePoint;
+import lt.LinasJu.Entities.TrafficLightLogic.Phase;
+import lt.LinasJu.Entities.TrafficLightLogic.SignalStateEnum;
+import lt.LinasJu.Entities.TrafficLightLogic.TLLogic;
+import lt.LinasJu.Entities.TrafficLightLogic.TrafficLightAlgorithmType;
+import lt.LinasJu.Entities.TypeOfEdge.Restriction;
+import lt.LinasJu.Entities.TypeOfEdge.Type;
+import lt.LinasJu.Entities.TypeOfEdge.VehicleClassEnum;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import java.awt.*;
 import java.util.*;
-import java.util.List;
+import java.util.stream.Collectors;
 
 public class ParserRepo {
     /**
-     *
      * @param doc a document to be parsed. must be data with tags from xml file.
      * @return nodes map with all their attributes and additional lower level attributes
      */
@@ -39,6 +46,7 @@ public class ParserRepo {
 
     /**
      * recursive function to find all node parameters including lower level sub-nodes
+     *
      * @param node the node that will be checked for attributes and children sub-nodes
      * @return all parsed nodes, sorted by node type
      */
@@ -68,47 +76,160 @@ public class ParserRepo {
         return nodes.get(nodeKey);
     }
 
-    public List<lt.LinasJu.Entities.Nodes.Node> getNodesFromNodesAttributes(Map<String, List<Map<String, Object>>> nodesAttributes) {
-        List<Map<String, Object>> nodeList  = nodesAttributes.get("node");
+    public List<lt.LinasJu.Entities.Nodes.Node> getNodesFromAttributeMap(Map<String, List<Map<String, Object>>> nodesAttributes) {
+        List<Map<String, Object>> nodeList = nodesAttributes.get("node");
+        if (nodeList == null) {
+            return null;
+        }
         List<lt.LinasJu.Entities.Nodes.Node> nodeListFinal = new ArrayList<>();
-        nodeList.forEach(nodeAttributes -> {
+        nodeList.forEach(nodeAttribute -> {
             lt.LinasJu.Entities.Nodes.Node node = new lt.LinasJu.Entities.Nodes.Node();
-            node.setId(getStringFromObject(nodeAttributes, "id"));
-            node.setX(getFloatFromObject(nodeAttributes, "x"));
-            node.setY(getFloatFromObject(nodeAttributes, "y"));
-            node.setType(NodeTypesEnum.get(getStringFromObject(nodeAttributes, "type")));
-            node.setTl(getStringFromObject(nodeAttributes, "tl"));
+            node.setId(getStringFromObject(nodeAttribute, "id"));
+            node.setX(getFloatFromObject(nodeAttribute, "x"));
+            node.setY(getFloatFromObject(nodeAttribute, "y"));
+            node.setType(NodeTypesEnum.get(getStringFromObject(nodeAttribute, "type")));
+            node.setTl(getStringFromObject(nodeAttribute, "tl"));
             nodeListFinal.add(node);
         });
 
         return nodeListFinal;
     }
 
-    public List<Edge> getEdgesFromEdgesAttributes(Map<String, List<Map<String, Object>>> edgesAttributes) {
-        List<Map<String, Object>> nodeList  = edgesAttributes.get("edge");
+    public List<Edge> getEdgesFromEdgeAttributes(Map<String, List<Map<String, Object>>> edgesAttributes) {
+        List<Map<String, Object>> edgeList = edgesAttributes.get("edge");
+        if (edgeList == null) {
+            return null;
+        }
+
         List<Edge> edgeListFinal = new ArrayList<>();
-        nodeList.forEach(nodeAttributes -> {
+        edgeList.forEach(edgeAttribute -> {
             Edge edge = new Edge();
-            edge.setId(getStringFromObject(nodeAttributes, "id"));
-            edge.setFrom(getStringFromObject(nodeAttributes, "from"));
-            edge.setTo(getStringFromObject(nodeAttributes, "to"));
-            edge.setType(getStringFromObject(nodeAttributes, "type"));
-            edge.setNumLanes(getIntegerFromObject(nodeAttributes, "numLanes"));
-            edge.setSpeed(getFloatFromObject(nodeAttributes, "speed"));
-            edge.setPriority(getIntegerFromObject(nodeAttributes, "priority"));
-            edge.setShape(getShapePointListFromObject(nodeAttributes, "shape"));
-            edge.setSpreadTypeEnum(SpreadTypeEnum.get(getStringFromObject(nodeAttributes, "spreadType")));
-            edge.setAllow(getStringListFromObject(nodeAttributes, "allow"));
-            edge.setDisallow(getStringListFromObject(nodeAttributes, "disallow"));
-            edge.setWidth(getFloatFromObject(nodeAttributes, "width"));
-            edge.setName(getStringFromObject(nodeAttributes, "name"));
-            edge.setEndOffset(getFloatFromObject(nodeAttributes, "endOffset"));
-            edge.setSidewalkWidth(getFloatFromObject(nodeAttributes, "sidewalkWidth"));
-            edge.setLanes(getLaneListFromObject(nodeAttributes, "lane"));
+            edge.setId(getStringFromObject(edgeAttribute, "id"));
+            edge.setFrom(getStringFromObject(edgeAttribute, "from"));
+            edge.setTo(getStringFromObject(edgeAttribute, "to"));
+            edge.setType(getStringFromObject(edgeAttribute, "type"));
+            edge.setNumLanes(getLongFromObject(edgeAttribute, "numLanes"));
+            edge.setSpeed(getFloatFromObject(edgeAttribute, "speed"));
+            edge.setPriority(getLongFromObject(edgeAttribute, "priority"));
+            edge.setShape(getShapePointListFromObject(edgeAttribute, "shape"));
+            edge.setSpreadTypeEnum(SpreadTypeEnum.get(getStringFromObject(edgeAttribute, "spreadType")));
+            edge.setAllow(getVehicleEnumListFromObject(edgeAttribute, "allow"));
+            edge.setDisallow(getVehicleEnumListFromObject(edgeAttribute, "disallow"));
+            edge.setWidth(getFloatFromObject(edgeAttribute, "width"));
+            edge.setName(getStringFromObject(edgeAttribute, "name"));
+            edge.setEndOffset(getFloatFromObject(edgeAttribute, "endOffset"));
+            Float sidewalkWidth = getFloatFromObject(edgeAttribute, "sidewalkWidth");
+            if (sidewalkWidth != null) {
+                edge.setSidewalkWidth(sidewalkWidth);
+            }
+            edge.setLanes(getLaneListFromObject(edgeAttribute, "lane"));
             edgeListFinal.add(edge);
         });
 
         return edgeListFinal;
+    }
+
+    public List<Roundabout> getRoundaboutsFromAttributeMap(Map<String, List<Map<String, Object>>> edgeAttributes) {
+        List<Map<String, Object>> roundaboutList = edgeAttributes.get("roundabout");
+        if (roundaboutList == null) {
+            return null;
+        }
+
+        List<Roundabout> roundaboutListFinal = new ArrayList<>();
+        roundaboutList.forEach(roundaboutAttribute -> {
+            Roundabout roundabout = new Roundabout();
+            roundabout.setEdgeIds(getStringListFromObject(roundaboutAttribute, "nodes"));
+            roundabout.setNodeIds(getStringListFromObject(roundaboutAttribute, "edges"));
+            roundaboutListFinal.add(roundabout);
+        });
+        return roundaboutListFinal;
+    }
+
+    public List<Type> getTypesFromAttributeMap(Map<String, List<Map<String, Object>>> typeAttributes) {
+        List<Map<String, Object>> typeList = typeAttributes.get("type");
+        if (typeList == null) {
+            return null;
+        }
+
+        List<Type> typeListFinal = new ArrayList<>();
+        typeList.forEach(typeAttribute -> {
+            Type type = new Type();
+            type.setId(getStringFromObject(typeAttribute, "id"));
+            type.setAllow(getVehicleEnumListFromObject(typeAttribute, "allow"));
+            type.setDisallow(getVehicleEnumListFromObject(typeAttribute, "disallow"));
+            type.setDiscard(getBooleanFromObject(typeAttribute, "discard"));
+            type.setNumLanes(getLongFromObject(typeAttribute, "numLanes"));
+            type.setOneway(getBooleanFromObject(typeAttribute, "oneway"));
+            type.setPriority(getLongFromObject(typeAttribute, "priority"));
+            type.setSpeed(getFloatFromObject(typeAttribute, "speed"));
+            type.setSidewalkWidth(getFloatFromObject(typeAttribute, "sidewalkWidth"));
+            type.setRestrictions(getRestrictionListFromObject(typeAttribute, "restriction"));
+            typeListFinal.add(type);
+        });
+        return typeListFinal;
+    }
+
+    public List<Connection> getConnectionsFromAttributeMap(Map<String, List<Map<String, Object>>> connectionAttributes) {
+        List<Map<String, Object>> connectionList = connectionAttributes.get("connection");
+        if (connectionList == null) {
+            return null;
+        }
+
+        List<Connection> connectionListFinal = new ArrayList<>();
+        connectionList.forEach(connectionAttribute -> {
+            Connection connection = new Connection();
+            connection.setFrom(getStringFromObject(connectionAttribute, "from"));
+            connection.setTo(getStringFromObject(connectionAttribute, "to"));
+            connection.setFromLane(getLongFromObject(connectionAttribute, "fromLane"));
+            connection.setToLane(getLongFromObject(connectionAttribute, "toLane"));
+            connection.setPass(getBooleanFromObject(connectionAttribute, "pass"));
+            connection.setKeepClear(getBooleanFromObject(connectionAttribute, "keepClear"));
+
+            Float contPos = getFloatFromObject(connectionAttribute, "contPos");
+            if (contPos != null) {
+                connection.setContPos(contPos);
+            }
+
+            Float visibility = getFloatFromObject(connectionAttribute, "visibility");
+            if (visibility != null) {
+                connection.setContPos(visibility);
+            }
+
+            Float speed = getFloatFromObject(connectionAttribute, "speed");
+            if (speed != null) {
+                connection.setSpeed(speed);
+            }
+            connection.setShape(getShapePointListFromObject(connectionAttribute, "shape"));
+            connection.setUncontrolled(getBooleanFromObject(connectionAttribute, "uncontrolled"));
+            connection.setAllow(getStringListFromObject(connectionAttribute, "allow"));
+            connection.setDisallow(getStringListFromObject(connectionAttribute, "disallow"));
+
+            connection.setTl(getStringFromObject(connectionAttribute, "tl"));
+            connection.setLinkIndex(getLongFromObject(connectionAttribute, "linkIndex"));
+            connectionListFinal.add(connection);
+        });
+        return connectionListFinal;
+    }
+
+    public List<TLLogic> getTllogicsFromTllAttributeMap(Map<String, List<Map<String, Object>>> tllAttributes) {
+        List<Map<String, Object>> tlLogicList = tllAttributes.get("tlLogic");
+        if (tlLogicList == null) {
+            return null;
+        }
+
+        List<TLLogic> tlLogicListFinal = new ArrayList<>();
+        tlLogicList.forEach(connectionAttribute -> {
+            TLLogic tlLogic = new TLLogic();
+            tlLogic.setId(getLongFromObject(connectionAttribute, "id"));
+            tlLogic.setTlType(TrafficLightAlgorithmType.get(getStringFromObject(connectionAttribute, "type")));
+            tlLogic.setProgramId(getLongFromObject(connectionAttribute, "programID"));
+            tlLogic.setOffset(getLongFromObject(connectionAttribute, "offset"));
+            tlLogic.setPhases(getPhaseListFromObject(connectionAttribute, "phase"));
+
+            tlLogicListFinal.add(tlLogic);
+        });
+
+        return tlLogicListFinal;
     }
 
     private List<Lane> getLaneListFromObject(Map<String, Object> attributes, String key) {
@@ -117,19 +238,20 @@ public class ParserRepo {
             return null;
         }
 
-        if (object instanceof ArrayList) {
-            ArrayList<Map<String, Object>> LanePropertiesMap = (ArrayList<Map<String, Object>>) object;
-            List<Lane> lanes = new ArrayList<>();
-            LanePropertiesMap.stream().map(this::getLaneFromMap).forEach(lanes::add);
-            return lanes;
+        if (!(object instanceof ArrayList)) {
+            return null;
         }
 
-        return null;
+        ArrayList<Map<String, Object>> lanePropertiesMap = (ArrayList<Map<String, Object>>) object;
+        List<Lane> lanes = new ArrayList<>();
+        lanePropertiesMap.stream().map(this::getLaneFromMap).forEach(lanes::add);
+        return lanes;
+
     }
 
     private Lane getLaneFromMap(Map<String, Object> laneMap) {
         Lane lane = new Lane();
-        lane.setIndex(getIntegerFromObject(laneMap, "index"));
+        lane.setIndex(getLongFromObject(laneMap, "index"));
         lane.setAllow(getStringListFromObject(laneMap, "allow"));
         lane.setDisallow(getStringListFromObject(laneMap, "disallow"));
         lane.setSpeed(getFloatFromObject(laneMap, "speed"));
@@ -140,6 +262,19 @@ public class ParserRepo {
         return lane;
     }
 
+    private List<Restriction> getRestrictionListFromObject(Map<String, Object> attributes, String key) {
+        Object object = attributes.get(key);
+        if (object == null) {
+            return null;
+        }
+
+        return null; //todo grazinti reikalinga lista, kol kas nenaudojamas
+    }
+
+    private boolean getBooleanFromObject(Map<String, Object> attributes, String key) {
+        return attributes.get(key) != null && (Objects.equals(String.valueOf(attributes.get(key)), "1"));
+    }
+
     private String getStringFromObject(Map<String, Object> attributes, String key) {
         return attributes.get(key) == null ? null : String.valueOf(attributes.get(key));
     }
@@ -148,8 +283,8 @@ public class ParserRepo {
         return attributes.get(key) == null ? null : Float.parseFloat(String.valueOf(attributes.get(key)));
     }
 
-    private Integer getIntegerFromObject(Map<String, Object> attributes, String key) {
-        return attributes.get(key) == null ? null : Integer.parseInt(String.valueOf(attributes.get(key)));
+    private Long getLongFromObject(Map<String, Object> attributes, String key) {
+        return attributes.get(key) == null ? null : Long.parseLong(String.valueOf(attributes.get(key)));
     }
 
     private List<ShapePoint> getShapePointListFromObject(Map<String, Object> attributes, String key) {
@@ -178,5 +313,59 @@ public class ParserRepo {
         return parsedString == null ? null : new ArrayList<>(Arrays.asList(parsedString.split(" ")));
     }
 
+    private List<Integer> getIntegerlistFromObject(Map<String, Object> attributes, String key) {
+        List<String> parsedStringList = getStringListFromObject(attributes, key);
+        if (parsedStringList == null || parsedStringList.isEmpty()) {
+            return null;
+        }
 
+        return parsedStringList.stream().map(Integer::parseInt).collect(Collectors.toList());
+    }
+
+    private List<VehicleClassEnum> getVehicleEnumListFromObject(Map<String, Object> attributes, String key) {
+        List<String> stringList = getStringListFromObject(attributes, key);
+        if (stringList == null) {
+            return null;
+        }
+
+        return stringList.stream().map(VehicleClassEnum::get).collect(Collectors.toList());
+    }
+
+    private List<Phase> getPhaseListFromObject(Map<String, Object> attributes, String key) {
+        Object object = attributes.get(key);
+        if (object == null) {
+            return null;
+        }
+
+        if (!(object instanceof ArrayList)) {
+            return null;
+        }
+
+        ArrayList<Map<String, Object>> phasePropertiesMap = (ArrayList<Map<String, Object>>) object;
+        return phasePropertiesMap.stream().map(this::getPhaseFromMap).collect(Collectors.toList());
+    }
+
+    private Phase getPhaseFromMap(Map<String, Object> laneMap) {
+        Phase phase = new Phase();
+        phase.setDuration(getLongFromObject(laneMap, "duration"));
+        phase.setStates(getStateEnumList(laneMap));
+        phase.setMinDur(getLongFromObject(laneMap, "minDur"));
+        phase.setMaxDur(getLongFromObject(laneMap, "maxDur"));
+        phase.setName(getStringFromObject(laneMap, "name"));
+//        phase.setNext(getStringListFromObject()); todo jeigu reiks
+        return phase;
+    }
+
+    private List<SignalStateEnum> getStateEnumList(Map<String, Object> laneMap) {
+        String stringState = getStringFromObject(laneMap, "state");
+        if (stringState == null) {
+            return null;
+        }
+
+        List<SignalStateEnum> states = new ArrayList<>();
+        for (int i  = 0; i < stringState.length(); i++) {
+            states.add(SignalStateEnum.get(String.valueOf(stringState.charAt(i))));
+        }
+        return states;
+    }
 }

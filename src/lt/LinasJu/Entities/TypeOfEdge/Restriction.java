@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Restriction {
-    private VehicleClassesEnum vehicleClass;
+    private VehicleClassEnum vehicleClass;
     private Float speed;
 }

@@ -52,11 +52,10 @@ public class CmdRepo {
      * @param commands run commands at desired location in cmd
      */
     public void runCommands(PrintWriter cmd, List<String> commands) {
-        commands.forEach(
-                command -> {
-                    cmd.println(command);
-                    cmd.flush();
-                });
+        commands.forEach(command -> {
+            cmd.println(command);
+            cmd.flush();
+        });
     }
 
     public List<Object> startCmdAtLocation(String location) {

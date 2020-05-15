@@ -10,10 +10,10 @@ import java.util.List;
 @Setter
 //https://sumo.dlr.de/userdoc/Simulation/Traffic_Lights.html#tllogic62_attributes
 public class TLLogic implements Serializable {
-    private int id; //This must be an existing traffic light id in the .net.xml file. Typically the id for a traffic light is identical with the junction id.
+    private Long id; //This must be an existing traffic light id in the .net.xml file. Typically the id for a traffic light is identical with the junction id.
     private TrafficLightAlgorithmType tlType;
-    private Integer programId;
-    private Integer offset;
+    private Long programId;
+    private Long offset;
     private List<Phase> phases;
 
 }

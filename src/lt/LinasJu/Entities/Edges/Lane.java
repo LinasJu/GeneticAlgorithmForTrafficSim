@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 //subelement of an XML-edge
 public class Lane implements Serializable {
-    private Integer index; //enumeration of the lane (0 is the rightmost lane, <NUMBER_LANES>-1 is the leftmost one)
+    private Long index; //enumeration of the lane (0 is the rightmost lane, <NUMBER_LANES>-1 is the leftmost one)
     private List<String> allow;
     private List<String> disallow;
     private Float speed;

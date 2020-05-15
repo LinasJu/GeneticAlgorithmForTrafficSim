@@ -19,10 +19,10 @@ import java.io.IOException;
 
 public class XmlRepo {
 
-    public Document readXml(String xmlFile) {
+    public Document readXml(String xmlFileName) {
         try {
             //creating a constructor of file class and parsing an XML file
-            File file = new File(xmlFile);
+            File file = new File(xmlFileName);
             //an instance of factory that gives a document builder
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             //an instance of builder to parse the specified xml file

@@ -3,7 +3,6 @@ package lt.LinasJu.Entities.Connections;
 import lombok.Getter;
 import lombok.Setter;
 import lt.LinasJu.Entities.Nodes.ShapePoint;
-import lt.LinasJu.Entities.TypeOfEdge.VehicleClassesEnum;
 
 import java.io.Serializable;
 import java.util.List;
@@ -14,8 +13,8 @@ import java.util.List;
 public class Connection implements Serializable {
     private String from;
     private String to;
-    private Integer fromLane; //(0 to n)
-    private Integer toLane; //(0 to n)
+    private Long fromLane; //(0 to n)
+    private Long toLane; //(0 to n)
     private boolean pass = false;
     private boolean keepClear = true;
     private Float contPos = -1f;
@@ -23,6 +22,10 @@ public class Connection implements Serializable {
     private Float speed = -1f;
     private List<ShapePoint> shape;
     private boolean uncontrolled = false;
-    private List<VehicleClassesEnum> allow;
-    private List<VehicleClassesEnum> disalow;
+    private List<String> allow;
+    private List<String> disallow;
+
+    //speficically for tll file connections
+    private String tl;//id ot the traffic light which controls this connection
+    private Long linkIndex; //the index in the state-attribute of the <phase>-elements which controls this connection
 }

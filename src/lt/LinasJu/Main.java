@@ -1,7 +1,12 @@
 package lt.LinasJu;
 
+import lt.LinasJu.Entities.Connections.Connection;
 import lt.LinasJu.Entities.Edges.Edge;
+import lt.LinasJu.Entities.Edges.Roundabout;
+import lt.LinasJu.Entities.Network;
 import lt.LinasJu.Entities.Nodes.Node;
+import lt.LinasJu.Entities.TrafficLightLogic.TLLogic;
+import lt.LinasJu.Entities.TypeOfEdge.Type;
 import org.w3c.dom.Document;
 
 import java.io.*;
@@ -11,6 +16,11 @@ import java.util.*;
 public class Main {
 
     public static String TIME_FORMAT = "yyyy.MM.dd.HH.mm.ss";
+
+    public static String fileName;
+    public static String workingDirectory;
+    public static boolean isImportedNetwork;
+
 
     public static void main(String[] args) throws Exception {
         if (args.length == 0) {
@@ -22,17 +32,7 @@ public class Main {
         XmlRepo xmlRepo = new XmlRepo();
         ParserRepo parserRepo = new ParserRepo();
 
-        String workingDirectory = args[0];
-
-        boolean isImportedNetwork = args.length == 2;
-        String fileName;
-        if (!isImportedNetwork) {
-            List<String> nameAndDir = newFileName(workingDirectory);
-            fileName = nameAndDir.get(0);
-            workingDirectory = nameAndDir.get(1);
-        } else {
-            fileName = args[1];
-        }
+        getWorkingDirectoryAndFileName(args);
 
         List<Object> cmdAndProcess = cmdRepo.startCmdAtLocation(workingDirectory);
         PrintWriter cmd = (PrintWriter) cmdAndProcess.get(0);
@@ -41,36 +41,67 @@ public class Main {
         //    collectConsoleOutputToFile(TEMP_WORKING_DIRECTORY, fileName);
         creationRepo.createInputFiles(cmd, workingDirectory, fileName, isImportedNetwork);
 
-//        List<SumoOutputDataFilesEnum> simulationOutputDataEnums = Arrays.asList(SumoOutputDataFilesEnum.FCD_TRACE_DATA, SumoOutputDataFilesEnum.RAW_VEHICLE_POSITION_DATA, SumoOutputDataFilesEnum.EMMISION_DATA);
-//        creationRepo.getSimulationOutputData(cmd, fileName, simulationOutputDataEnums);
-//        creationRepo.generatePlainOutputOfNetwork(cmd, fileName);
+        List<SumoOutputDataFilesEnum> simulationOutputDataEnums = Arrays.asList(SumoOutputDataFilesEnum.FCD_TRACE_DATA, SumoOutputDataFilesEnum.RAW_VEHICLE_POSITION_DATA, SumoOutputDataFilesEnum.EMMISION_DATA);
+        creationRepo.getSimulationOutputData(cmd, fileName, simulationOutputDataEnums);
+        creationRepo.generatePlainOutputOfNetwork(cmd, fileName);
 
         cmd.flush();
         cmd.close();
         process.waitFor();
 
-//        String nodeFileName = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd() + FilesSuffixesEnum.NODES.toString();
-//        Document nodeDocument = xmlRepo.readXml(nodeFileName);
-//        Map<String, List<Map<String, Object>>> nodesAttributes = parserRepo.parseDocumentToObjects(nodeDocument);
-//        List<Node> nodes = parserRepo.getNodesFromNodesAttributes(nodesAttributes);
+        String fileNameBase = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd();
 
-        String edgeFileName = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd() + FilesSuffixesEnum.EDGES.toString();
-        Document edgeDocument = xmlRepo.readXml(edgeFileName);
+        Document nodeDocument = xmlRepo.readXml(fileNameBase + FilesSuffixesEnum.NODES.toString());
+        Map<String, List<Map<String, Object>>> nodesAttributes = parserRepo.parseDocumentToObjects(nodeDocument);
+
+        Document edgeDocument = xmlRepo.readXml(fileNameBase + FilesSuffixesEnum.EDGES.toString());
         Map<String, List<Map<String, Object>>> edgeAttributes = parserRepo.parseDocumentToObjects(edgeDocument);
-        List<Edge> edges = parserRepo.getEdgesFromEdgesAttributes(edgeAttributes);
 
-        String typeFileName = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd() + FilesSuffixesEnum.TYPE_OF_EDGES.toString();
-        Document typeDocument = xmlRepo.readXml(typeFileName);
+        Document typeDocument = xmlRepo.readXml(fileNameBase + FilesSuffixesEnum.TYPE_OF_EDGES.toString());
         Map<String, List<Map<String, Object>>> typeAttributes = parserRepo.parseDocumentToObjects(typeDocument);
 
-        String connectionFileName = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd() + FilesSuffixesEnum.CONNECTIONS.toString();
-        Document connectionDocument = xmlRepo.readXml(connectionFileName);
+        Document connectionDocument = xmlRepo.readXml(fileNameBase + FilesSuffixesEnum.CONNECTIONS.toString());
         Map<String, List<Map<String, Object>>> connectionAttributes = parserRepo.parseDocumentToObjects(connectionDocument);
 
-        String trafficLghtLogicFileName = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd() + FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS.toString();
-        Document tllDocument = xmlRepo.readXml(trafficLghtLogicFileName);
+        Document tllDocument = xmlRepo.readXml(fileNameBase + FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS.toString());
         Map<String, List<Map<String, Object>>> tllAttributes = parserRepo.parseDocumentToObjects(tllDocument);
 
+        List<Node> nodes = parserRepo.getNodesFromAttributeMap(nodesAttributes);
+        List<Edge> edges = parserRepo.getEdgesFromEdgeAttributes(edgeAttributes);
+        List<Roundabout> roundabouts = parserRepo.getRoundaboutsFromAttributeMap(edgeAttributes);
+        List<Type> types = parserRepo.getTypesFromAttributeMap(typeAttributes);
+        List<Connection> connections = parserRepo.getConnectionsFromAttributeMap(connectionAttributes);//todo jeigu reikia padaryti map fromlane toLane
+        List<TLLogic> TLLogics = parserRepo.getTllogicsFromTllAttributeMap(tllAttributes);
+        List<Connection> TLLogicsConnections = parserRepo.getConnectionsFromAttributeMap(tllAttributes);
+
+        Network network = setNetwork(nodes, edges, roundabouts, types, connections, TLLogics, TLLogicsConnections);
+
+
+    }
+
+    private static Network setNetwork(List<Node> nodes, List<Edge> edges, List<Roundabout> roundabouts, List<Type> types, List<Connection> connections, List<TLLogic> tlLogics, List<Connection> tlLogicsConnections) {
+        Network network = new Network();
+        network.setNodes(nodes);
+        network.setEdges(edges);
+        network.setRoundabouts(roundabouts);
+        network.setEdgeTypes(types);
+        network.setConnections(connections);
+        network.setTrafficLightLogics(tlLogics);
+        network.setTrafficLightLogicsConnections(tlLogicsConnections);
+        return network;
+    }
+
+    private static void getWorkingDirectoryAndFileName(String[] args) {
+        workingDirectory = args[0];
+
+        isImportedNetwork = args.length == 2;
+        if (!isImportedNetwork) {
+            List<String> nameAndDir = newFileName(workingDirectory);
+            fileName = nameAndDir.get(0);
+            workingDirectory = nameAndDir.get(1);
+        } else {
+            fileName = args[1];
+        }
     }
 
     public static void collectConsoleOutputToFile(String workingDir, String fileName) {
