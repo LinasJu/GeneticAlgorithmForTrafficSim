@@ -1,4 +1,4 @@
-package lt.LinasJu.Entities.TrafficLightLogic;
+package lt.LinasJu.Entities.TlLogics;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +10,7 @@ import java.util.List;
 //https://sumo.dlr.de/userdoc/Simulation/Traffic_Lights.html#phase62_attributes
 public class Phase {
     private Long duration;
-    private List<SignalStateEnum> states; //https://sumo.dlr.de/userdoc/Simulation/Traffic_Lights.html#default_link_indices
+    private List<SignalStateEnum> state; //https://sumo.dlr.de/userdoc/Simulation/Traffic_Lights.html#default_link_indices
     private Long minDur;
     private Long maxDur;
     private String name;

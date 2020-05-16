@@ -1,23 +1,25 @@
 package lt.LinasJu;
 
+import lt.LinasJu.Entities.Network;
+import lt.LinasJu.Entities.TlLogics.SignalStateEnum;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.*;
 
 public class XmlRepo {
+    CreationRepo creationRepo = new CreationRepo();
 
     public Document readXml(String xmlFileName) {
         try {
@@ -35,72 +37,154 @@ public class XmlRepo {
         return null;
     }
 
-    public void saveToXML(String xmlFile) {
-        String role1 = null;
-        String role2 = null;
-        String role3 = null;
-        String role4 = null;
+    public void saveNetworkToXmlFiles(String workingDirectory, String filename, Network network, String index) {
+        String outputFileNameBase = workingDirectory + filename + index;
 
-        Document dom;
-        Element e = null;
+//        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.NODES.toString(), Collections.singletonList(network.getNodes()));
+        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.EDGES.toString(), Arrays.asList(network.getEdges(), network.getRoundabouts()));
+//        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.TYPE_OF_EDGES.toString(), Collections.singletonList(network.getEdgeTypes()));
+//        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.CONNECTIONS.toString(), Collections.singletonList(network.getConnections()));
+//        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS.toString(), Arrays.asList(network.getTrafficLightLogics(), network.getTrafficLightLogicsConnections()));
+    }
 
-        // instance of a DocumentBuilderFactory
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    /**
+     *
+     * @param outputFileName Output file name that output will be generated to.
+     * @param listOfNodeLists Network entites wrapped in List - in case it is needed to write more than one entity to one file. Array Order must be correct
+     */
+    private void saveNetworkEntitiesToXmlFile(String outputFileName, List<?> listOfNodeLists) {
         try {
-            // use factory to get an instance of document builder
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            // create instance of DOM
-            dom = db.newDocument();
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
-            // create the root element
-            Element rootEle = dom.createElement("roles");
+            String rootNodeElementName = StringUtils.getRootNodeElementNameFromClass(((List<?>) listOfNodeLists.get(0)).get(0).getClass());
+            Document doc = docBuilder.newDocument();
 
-            // create data elements and place them under root
-            e = dom.createElement("role1");
-            e.appendChild(dom.createTextNode(role1));
-            rootEle.appendChild(e);
+            // root element
+            Element rootElement = doc.createElement(rootNodeElementName);
+            listOfNodeLists.forEach(nodeList -> {
+                //for every other nodeList instead of first, it is needed to set elementName
+                setAttributesToNewElement(doc, rootElement, nodeList == listOfNodeLists.get(0) , (List<?>) nodeList);
+            });
 
-            e = dom.createElement("role2");
-            e.appendChild(dom.createTextNode(role2));
-            rootEle.appendChild(e);
+            // write the content into xml file
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource source = new DOMSource(doc);
+            creationRepo.createFile(outputFileName);
+            StreamResult result = new StreamResult(new File(outputFileName));
 
-            e = dom.createElement("role3");
-            e.appendChild(dom.createTextNode(role3));
-            rootEle.appendChild(e);
+            // Output to console for testing
+//            StreamResult result = new StreamResult(System.out);
 
-            e = dom.createElement("role4");
-            e.appendChild(dom.createTextNode(role4));
-            rootEle.appendChild(e);
+            transformer.transform(source, result);
 
-            dom.appendChild(rootEle);
+            System.out.println("File saved!");
 
-            try {
-                Transformer tr = TransformerFactory.newInstance().newTransformer();
-                tr.setOutputProperty(OutputKeys.INDENT, "yes");
-                tr.setOutputProperty(OutputKeys.METHOD, "xmlFile");
-                tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-                tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd");
-                tr.setOutputProperty("{http://xmlFile.apache.org/xslt}indent-amount", "4");
-
-                // send DOM to file
-                tr.transform(new DOMSource(dom), new StreamResult(new FileOutputStream(xmlFile)));
-
-            } catch (TransformerException | IOException te) {
-                System.out.println(te.getMessage());
-            }
-        } catch (ParserConfigurationException pce) {
-            System.out.println("UsersXML: Error trying to instantiate DocumentBuilder " + pce);
+        } catch (ParserConfigurationException | TransformerException pce) {
+            pce.printStackTrace();
         }
     }
 
-    private String getTextValue(String def, Element doc, String tag) {
-        String value = def;
-        NodeList nl;
-        nl = doc.getElementsByTagName(tag);
-        if (nl.getLength() > 0 && nl.item(0).hasChildNodes()) {
-            value = nl.item(0).getFirstChild().getNodeValue();
+    /**
+     * This function if needed creates new additional Elements, adds passed List of values as new elements' attributes.
+     * @param doc The main document that is being created.
+     * @param rootElementToAddAttributes
+     * @param isFirstElement if not null, creates new element with this name and adds attributes to created Element
+     * @param nodeList List of nodes to be added to element
+     */
+    private void setAttributesToNewElement(Document doc, Element rootElementToAddAttributes, boolean isFirstElement, List<?> nodeList) {
+        // new element
+        if (!isFirstElement) {
+            doc.appendChild(rootElementToAddAttributes);
         }
-        return value;
+
+        // node element
+        // set attributes to node element
+        nodeList.forEach(node -> {
+            String nodeElementName = StringUtils.decapitalize(node.getClass().getSimpleName());
+            Element nodeElement = doc.createElement(nodeElementName);
+            rootElementToAddAttributes.appendChild(nodeElement);
+            setAttributesToElement(doc, node, nodeElement);
+        });
+    }
+
+    /**
+     *
+     * @param doc The main document that is being created.
+     * @param node List or object of values to add as attributes to Element.
+     * @param nodeElement the Element to add attributes to.
+     */
+    private void setAttributesToElement(Document doc, Object node, Element nodeElement) {
+        Field[] fields = node.getClass().getDeclaredFields();
+        Field[] superclassFields = node.getClass().getSuperclass().getDeclaredFields();
+
+        setAttributesFromEntityFields(doc, node, nodeElement, fields);
+        if (superclassFields.length != 0) {
+            setAttributesFromEntityFields(doc, node, nodeElement, superclassFields);
+        }
+    }
+
+    /**
+     *
+     * @param doc The main document that is being created.
+     * @param object List or object of values to add as attributes to Element.
+     * @param nodeElement the Element to add attributes to.
+     * @param objectFields all object fields to set as Attributes to Element.
+     */
+    private void setAttributesFromEntityFields(Document doc, Object object, Element nodeElement, Field[] objectFields) {
+        Arrays.stream(objectFields).forEach(field -> {
+            try {
+                field.setAccessible(true);
+                Object fieldValue = field.get(object);
+
+                if (fieldValue == null) {
+                    return;
+                }
+
+                if (field.getType() == List.class) {
+                    setListAttributeToElement(doc, nodeElement, field.getName(), (List<?>) fieldValue);
+                    return;
+                }
+
+                if (field.isEnumConstant()) {
+                    setEnumAttributeToElement(doc, nodeElement, field.getName(), fieldValue);
+                    return;
+                }
+
+                setSimpleAttributeToElement(doc, nodeElement, field.getName(), String.valueOf(fieldValue));
+
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void setSimpleAttributeToElement(Document doc, Element nodeElement, String name, String s) {
+        Attr attr = doc.createAttribute(name);
+        attr.setValue(s);
+        nodeElement.setAttributeNode(attr);
+    }
+
+    private void setListAttributeToElement(Document doc, Element nodeElement, String elementName, List<?> fieldValue) {
+        setConcatenatedListValuesAttributeToElement(doc, nodeElement, elementName, fieldValue);//todo lane child https://mkyong.com/java/how-to-create-xml-file-in-java-dom/?utm_source=mkyong.com&utm_medium=referral&utm_campaign=afterpost-related&utm_content=link3
+    }
+
+    private void setEnumAttributeToElement(Document doc, Element nodeElement, String elementName, Object enumObject) {
+        setConcatenatedListValuesAttributeToElement(doc, nodeElement, elementName, Collections.singletonList(enumObject));
+    }
+
+    /**
+     *  @param doc The main document that is being created.
+     * @param nodeElement The Element to add attributes to.
+     * @param elementName element name to add attribute to.
+     * @param objectList List of enums to create attribute value from.
+     */
+    private void setConcatenatedListValuesAttributeToElement(Document doc, Element nodeElement, String elementName, List<?> objectList) {
+        //for signalStateEnums is a must to be joined without spaces, for others is a must to be joined with spaces.
+        StringJoiner joiner = new StringJoiner(objectList.get(0).getClass() == SignalStateEnum.class ? "" : " ");
+        objectList.stream().map(Object::toString).forEach(joiner::add);
+        setSimpleAttributeToElement(doc, nodeElement, elementName, joiner.toString());
     }
 
 }

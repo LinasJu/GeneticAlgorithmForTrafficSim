@@ -5,7 +5,7 @@ import lt.LinasJu.Entities.Edges.Edge;
 import lt.LinasJu.Entities.Edges.Roundabout;
 import lt.LinasJu.Entities.Network;
 import lt.LinasJu.Entities.Nodes.Node;
-import lt.LinasJu.Entities.TrafficLightLogic.TLLogic;
+import lt.LinasJu.Entities.TlLogics.TlLogic;
 import lt.LinasJu.Entities.TypeOfEdge.Type;
 import org.w3c.dom.Document;
 
@@ -30,24 +30,38 @@ public class Main {
         CmdRepo cmdRepo = new CmdRepo();
         CreationRepo creationRepo = new CreationRepo();
         XmlRepo xmlRepo = new XmlRepo();
-        ParserRepo parserRepo = new ParserRepo();
 
         getWorkingDirectoryAndFileName(args);
+//
+//        List<Object> cmdAndProcess = cmdRepo.startCmdAtLocation(workingDirectory);
+//        PrintWriter cmd = (PrintWriter) cmdAndProcess.get(0);
+//        Process process = (Process) cmdAndProcess.get(1);
+//
+//        //    collectConsoleOutputToFile(TEMP_WORKING_DIRECTORY, fileName);
+//        creationRepo.createInputFiles(cmd, workingDirectory, fileName, isImportedNetwork); // creates routes and SUMO config file (if no network - then network too)
+//
+//        List<SumoOutputDataFilesEnum> simulationOutputFileTypes = Arrays.asList(SumoOutputDataFilesEnum.FCD_TRACE_DATA, SumoOutputDataFilesEnum.RAW_VEHICLE_POSITION_DATA, SumoOutputDataFilesEnum.EMMISION_DATA);
+//        creationRepo.createSimulationOutputData(cmd, fileName, simulationOutputFileTypes);
+//        creationRepo.createPlainOutputFilesForEditing(cmd, fileName); //generates nodes, edges, connections, traffic light logic and type of edges files
+//
+//        cmd.close();
+//        process.waitFor();
 
-        List<Object> cmdAndProcess = cmdRepo.startCmdAtLocation(workingDirectory);
-        PrintWriter cmd = (PrintWriter) cmdAndProcess.get(0);
-        Process process = (Process) cmdAndProcess.get(1);
+        Network network = getNetworkFromGeneratedOutputNetworkFiles();
 
-        //    collectConsoleOutputToFile(TEMP_WORKING_DIRECTORY, fileName);
-        creationRepo.createInputFiles(cmd, workingDirectory, fileName, isImportedNetwork);
+        //get simulation output
+        //analyze simulation output (and warnings from simulation progress)
+        //edit network with genetic algorithm
+        //export network to xml files
 
-        List<SumoOutputDataFilesEnum> simulationOutputDataEnums = Arrays.asList(SumoOutputDataFilesEnum.FCD_TRACE_DATA, SumoOutputDataFilesEnum.RAW_VEHICLE_POSITION_DATA, SumoOutputDataFilesEnum.EMMISION_DATA);
-        creationRepo.getSimulationOutputData(cmd, fileName, simulationOutputDataEnums);
-        creationRepo.generatePlainOutputOfNetwork(cmd, fileName);
 
-        cmd.flush();
-        cmd.close();
-        process.waitFor();
+       xmlRepo.saveNetworkToXmlFiles(workingDirectory, fileName, network, String.valueOf(1)); //todo
+
+    }
+
+    private static Network getNetworkFromGeneratedOutputNetworkFiles() {
+        XmlRepo xmlRepo = new XmlRepo();
+        ParserRepo parserRepo = new ParserRepo();
 
         String fileNameBase = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd();
 
@@ -71,23 +85,18 @@ public class Main {
         List<Roundabout> roundabouts = parserRepo.getRoundaboutsFromAttributeMap(edgeAttributes);
         List<Type> types = parserRepo.getTypesFromAttributeMap(typeAttributes);
         List<Connection> connections = parserRepo.getConnectionsFromAttributeMap(connectionAttributes);//todo jeigu reikia padaryti map fromlane toLane
-        List<TLLogic> TLLogics = parserRepo.getTllogicsFromTllAttributeMap(tllAttributes);
+        List<TlLogic> TlLogics = parserRepo.getTllogicsFromTllAttributeMap(tllAttributes);
         List<Connection> TLLogicsConnections = parserRepo.getConnectionsFromAttributeMap(tllAttributes);
 
-        Network network = setNetwork(nodes, edges, roundabouts, types, connections, TLLogics, TLLogicsConnections);
 
-
-    }
-
-    private static Network setNetwork(List<Node> nodes, List<Edge> edges, List<Roundabout> roundabouts, List<Type> types, List<Connection> connections, List<TLLogic> tlLogics, List<Connection> tlLogicsConnections) {
         Network network = new Network();
         network.setNodes(nodes);
         network.setEdges(edges);
         network.setRoundabouts(roundabouts);
         network.setEdgeTypes(types);
         network.setConnections(connections);
-        network.setTrafficLightLogics(tlLogics);
-        network.setTrafficLightLogicsConnections(tlLogicsConnections);
+        network.setTrafficLightLogics(TlLogics);
+        network.setTrafficLightLogicsConnections(TLLogicsConnections);
         return network;
     }
 

@@ -1,4 +1,4 @@
-package lt.LinasJu.Entities.TrafficLightLogic;
+package lt.LinasJu.Entities.TlLogics;
 
 import java.util.HashMap;
 import java.util.Map;

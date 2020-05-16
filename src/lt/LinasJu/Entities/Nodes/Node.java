@@ -13,7 +13,8 @@ public class Node extends BaseNode implements Serializable {
     private String id;
     private Float x;
     private Float y;
-    private List<ShapePoint> positionList;
+    private Float Z;
+    private List<ShapePoint> shape; //List of positions; each position is encoded in x,y or x,y,z in meters (do not separate the numbers with a space!).
     private RightOfWayType rightOfWay;
     private List<String> controlledInner; //Edges which shall be controlled by a joined TLS despite being incoming as well as outgoing to the jointly controlled nodes
 }

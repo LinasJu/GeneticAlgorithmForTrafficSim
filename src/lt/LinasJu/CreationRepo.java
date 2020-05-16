@@ -1,5 +1,6 @@
 package lt.LinasJu;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -121,6 +122,13 @@ public class CreationRepo {
         return SumoCommandsEnum.SUMO.toString().concat(" -c ").concat(fileName).concat(outputFiles);
     }
 
+    /**
+     *  Checks if network is imported, if not - creates random network. Then creates random routes for network file and SUMO configuration file to run simulation.
+     * @param cmd command windows
+     * @param workingDir working directory
+     * @param fileName base file name
+     * @param isImportedNetwork checking if it is needed to generate random network or it is imported
+     */
     public void createInputFiles(PrintWriter cmd, String workingDir, String fileName, boolean isImportedNetwork) {
 
         if (!isImportedNetwork) {
@@ -128,13 +136,13 @@ public class CreationRepo {
             cmd.flush();
         }
 
-        cmd.println(generateRandomRoutes(RANDOM_TRIPS_LOCATION, fileName)); // 2. create random routes from network file
+        cmd.println(generateRandomRoutes(RANDOM_TRIPS_LOCATION, fileName)); // 2. create random routes for network file
         cmd.flush();
 
         createSumoConfigFile(workingDir, fileName); // 3. setup SUMO configuration file
     }
 
-    public void getSimulationOutputData(PrintWriter cmd, String fileName, List<SumoOutputDataFilesEnum> outputDataFilesEnums) {
+    public void createSimulationOutputData(PrintWriter cmd, String fileName, List<SumoOutputDataFilesEnum> outputDataFilesEnums) {
         String output = generateOutputCommand(fileName, outputDataFilesEnums); // 4. generate output
 
         cmd.println(output + " > " + fileName + "simulationOutput.txt 2>&1");
@@ -142,8 +150,23 @@ public class CreationRepo {
     }
 
     //used for editing. generates nodes, edges, connections, traffic light logic and type of edges files
-    public void generatePlainOutputOfNetwork(PrintWriter cmd, String fileName) {
+    public void createPlainOutputFilesForEditing(PrintWriter cmd, String fileName) {
         cmd.println(SumoCommandsEnum.NETCONVERT.toString() + String.format(SumoCommandsEnum.SUMO_NET_FILE_INPUT.toString(), fileName + FilesSuffixesEnum.NETWORK.toString()) + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.toString() + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd());
         cmd.flush();
     }
+
+    public void createFile(String fileName) {
+        try {
+            File myObj = new File(fileName);
+            if (myObj.createNewFile()) {
+                System.out.println("File created: " + myObj.getName());
+            } else {
+                System.out.println("File " + myObj.getName() + " already exists.");
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+
 }

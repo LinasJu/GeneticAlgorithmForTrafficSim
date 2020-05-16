@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 //https://sumo.dlr.de/userdoc/Networks/PlainXML.html#road_segment_refining
 //subelement of an XML-edge
-public class SplitEdge extends BaseNode implements Serializable {
+public class Split extends BaseNode implements Serializable {
     private Float pos; //if negative position - split is inserted counting from the end of the edge
     private List<Integer> lanes;
     private Float speed;

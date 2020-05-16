@@ -19,8 +19,9 @@ public class Edge implements Serializable {
     private Long numLanes; //(1 to n)
     private Float speed; //max edge speed in m/s
     private Long priority; //used for right-of-way computation
+    private Float length;
     private List<ShapePoint> shape; //If the shape is given it should start and end with the positions of the from-node and to-node.
-    private SpreadTypeEnum spreadTypeEnum;
+    private SpreadTypeEnum spreadType;
     private List<VehicleClassEnum> allow;
     private List<VehicleClassEnum> disallow;
     private Float width; //used for visualization
@@ -28,5 +29,5 @@ public class Edge implements Serializable {
     private Float endOffset; //Move the stop line back from the intersection by the given amount (effectively shortening the edge and locally enlarging the intersection)
     private Float sidewalkWidth = -1.0f; //Adds a sidewalk with the given width (defaults to -1 which adds nothing).
 
-    private List<Lane> lanes;
+    private List<Lane> lane;
 }

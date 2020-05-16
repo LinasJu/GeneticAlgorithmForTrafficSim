@@ -7,10 +7,10 @@ import lt.LinasJu.Entities.Edges.Roundabout;
 import lt.LinasJu.Entities.Edges.SpreadTypeEnum;
 import lt.LinasJu.Entities.Nodes.NodeTypesEnum;
 import lt.LinasJu.Entities.Nodes.ShapePoint;
-import lt.LinasJu.Entities.TrafficLightLogic.Phase;
-import lt.LinasJu.Entities.TrafficLightLogic.SignalStateEnum;
-import lt.LinasJu.Entities.TrafficLightLogic.TLLogic;
-import lt.LinasJu.Entities.TrafficLightLogic.TrafficLightAlgorithmType;
+import lt.LinasJu.Entities.TlLogics.Phase;
+import lt.LinasJu.Entities.TlLogics.SignalStateEnum;
+import lt.LinasJu.Entities.TlLogics.TlLogic;
+import lt.LinasJu.Entities.TlLogics.TrafficLightAlgorithmType;
 import lt.LinasJu.Entities.TypeOfEdge.Restriction;
 import lt.LinasJu.Entities.TypeOfEdge.Type;
 import lt.LinasJu.Entities.TypeOfEdge.VehicleClassEnum;
@@ -87,6 +87,7 @@ public class ParserRepo {
             node.setId(getStringFromObject(nodeAttribute, "id"));
             node.setX(getFloatFromObject(nodeAttribute, "x"));
             node.setY(getFloatFromObject(nodeAttribute, "y"));
+            node.setZ(getFloatFromObject(nodeAttribute, "z"));
             node.setType(NodeTypesEnum.get(getStringFromObject(nodeAttribute, "type")));
             node.setTl(getStringFromObject(nodeAttribute, "tl"));
             nodeListFinal.add(node);
@@ -111,8 +112,9 @@ public class ParserRepo {
             edge.setNumLanes(getLongFromObject(edgeAttribute, "numLanes"));
             edge.setSpeed(getFloatFromObject(edgeAttribute, "speed"));
             edge.setPriority(getLongFromObject(edgeAttribute, "priority"));
+            edge.setLength(getFloatFromObject(edgeAttribute, "length"));
             edge.setShape(getShapePointListFromObject(edgeAttribute, "shape"));
-            edge.setSpreadTypeEnum(SpreadTypeEnum.get(getStringFromObject(edgeAttribute, "spreadType")));
+            edge.setSpreadType(SpreadTypeEnum.get(getStringFromObject(edgeAttribute, "spreadType")));
             edge.setAllow(getVehicleEnumListFromObject(edgeAttribute, "allow"));
             edge.setDisallow(getVehicleEnumListFromObject(edgeAttribute, "disallow"));
             edge.setWidth(getFloatFromObject(edgeAttribute, "width"));
@@ -122,7 +124,7 @@ public class ParserRepo {
             if (sidewalkWidth != null) {
                 edge.setSidewalkWidth(sidewalkWidth);
             }
-            edge.setLanes(getLaneListFromObject(edgeAttribute, "lane"));
+            edge.setLane(getLaneListFromObject(edgeAttribute, "lane"));
             edgeListFinal.add(edge);
         });
 
@@ -138,8 +140,8 @@ public class ParserRepo {
         List<Roundabout> roundaboutListFinal = new ArrayList<>();
         roundaboutList.forEach(roundaboutAttribute -> {
             Roundabout roundabout = new Roundabout();
-            roundabout.setEdgeIds(getStringListFromObject(roundaboutAttribute, "nodes"));
-            roundabout.setNodeIds(getStringListFromObject(roundaboutAttribute, "edges"));
+            roundabout.setEdges(getStringListFromObject(roundaboutAttribute, "nodes"));
+            roundabout.setNodes(getStringListFromObject(roundaboutAttribute, "edges"));
             roundaboutListFinal.add(roundabout);
         });
         return roundaboutListFinal;
@@ -211,20 +213,20 @@ public class ParserRepo {
         return connectionListFinal;
     }
 
-    public List<TLLogic> getTllogicsFromTllAttributeMap(Map<String, List<Map<String, Object>>> tllAttributes) {
+    public List<TlLogic> getTllogicsFromTllAttributeMap(Map<String, List<Map<String, Object>>> tllAttributes) {
         List<Map<String, Object>> tlLogicList = tllAttributes.get("tlLogic");
         if (tlLogicList == null) {
             return null;
         }
 
-        List<TLLogic> tlLogicListFinal = new ArrayList<>();
+        List<TlLogic> tlLogicListFinal = new ArrayList<>();
         tlLogicList.forEach(connectionAttribute -> {
-            TLLogic tlLogic = new TLLogic();
+            TlLogic tlLogic = new TlLogic();
             tlLogic.setId(getLongFromObject(connectionAttribute, "id"));
-            tlLogic.setTlType(TrafficLightAlgorithmType.get(getStringFromObject(connectionAttribute, "type")));
-            tlLogic.setProgramId(getLongFromObject(connectionAttribute, "programID"));
+            tlLogic.setType(TrafficLightAlgorithmType.get(getStringFromObject(connectionAttribute, "type")));
+            tlLogic.setProgramID(getLongFromObject(connectionAttribute, "programID"));
             tlLogic.setOffset(getLongFromObject(connectionAttribute, "offset"));
-            tlLogic.setPhases(getPhaseListFromObject(connectionAttribute, "phase"));
+            tlLogic.setPhase(getPhaseListFromObject(connectionAttribute, "phase"));
 
             tlLogicListFinal.add(tlLogic);
         });
@@ -348,7 +350,7 @@ public class ParserRepo {
     private Phase getPhaseFromMap(Map<String, Object> laneMap) {
         Phase phase = new Phase();
         phase.setDuration(getLongFromObject(laneMap, "duration"));
-        phase.setStates(getStateEnumList(laneMap));
+        phase.setState(getStateEnumList(laneMap));
         phase.setMinDur(getLongFromObject(laneMap, "minDur"));
         phase.setMaxDur(getLongFromObject(laneMap, "maxDur"));
         phase.setName(getStringFromObject(laneMap, "name"));

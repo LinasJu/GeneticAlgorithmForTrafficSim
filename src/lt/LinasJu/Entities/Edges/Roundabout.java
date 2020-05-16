@@ -9,6 +9,6 @@ import java.util.List;
 @Setter
 //https://sumo.dlr.de/userdoc/Networks/PlainXML.html#roundabouts
 public class Roundabout {
-    List<String> edgeIds;
-    List<String> nodeIds;
+    List<String> edges;
+    List<String> nodes;
 }
