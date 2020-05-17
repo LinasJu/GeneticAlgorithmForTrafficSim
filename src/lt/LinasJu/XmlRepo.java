@@ -1,6 +1,8 @@
 package lt.LinasJu;
 
+import lt.LinasJu.Entities.Edges.Lane;
 import lt.LinasJu.Entities.Network;
+import lt.LinasJu.Entities.TlLogics.Phase;
 import lt.LinasJu.Entities.TlLogics.SignalStateEnum;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -40,11 +42,11 @@ public class XmlRepo {
     public void saveNetworkToXmlFiles(String workingDirectory, String filename, Network network, String index) {
         String outputFileNameBase = workingDirectory + filename + index;
 
-//        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.NODES.toString(), Collections.singletonList(network.getNodes()));
+        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.NODES.toString(), Collections.singletonList(network.getNodes()));
         saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.EDGES.toString(), Arrays.asList(network.getEdges(), network.getRoundabouts()));
-//        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.TYPE_OF_EDGES.toString(), Collections.singletonList(network.getEdgeTypes()));
-//        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.CONNECTIONS.toString(), Collections.singletonList(network.getConnections()));
-//        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS.toString(), Arrays.asList(network.getTrafficLightLogics(), network.getTrafficLightLogicsConnections()));
+        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.TYPE_OF_EDGES.toString(), Collections.singletonList(network.getEdgeTypes()));
+        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.CONNECTIONS.toString(), Collections.singletonList(network.getConnections()));
+        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS.toString(), Arrays.asList(network.getTrafficLightLogics(), network.getTrafficLightLogicsConnections()));
     }
 
     /**
@@ -64,14 +66,18 @@ public class XmlRepo {
             Element rootElement = doc.createElement(rootNodeElementName);
             listOfNodeLists.forEach(nodeList -> {
                 //for every other nodeList instead of first, it is needed to set elementName
-                setAttributesToNewElement(doc, rootElement, nodeList == listOfNodeLists.get(0) , (List<?>) nodeList);
+                boolean isFirstElement = nodeList == listOfNodeLists.get(0);
+                setChildsToElement(doc, rootElement, isFirstElement, (List<?>) nodeList);
+                if (isFirstElement) {
+                    doc.appendChild(rootElement);
+                }
             });
 
             // write the content into xml file
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource source = new DOMSource(doc);
-            creationRepo.createFile(outputFileName);
+            creationRepo.createEmptyFile(outputFileName);
             StreamResult result = new StreamResult(new File(outputFileName));
 
             // Output to console for testing
@@ -87,17 +93,17 @@ public class XmlRepo {
     }
 
     /**
-     * This function if needed creates new additional Elements, adds passed List of values as new elements' attributes.
+     * This function if needed creates new additional Elements, adds passed List of values as new elements' child.
      * @param doc The main document that is being created.
      * @param rootElementToAddAttributes
      * @param isFirstElement if not null, creates new element with this name and adds attributes to created Element
      * @param nodeList List of nodes to be added to element
      */
-    private void setAttributesToNewElement(Document doc, Element rootElementToAddAttributes, boolean isFirstElement, List<?> nodeList) {
-        // new element
+    private void setChildsToElement(Document doc, Element rootElementToAddAttributes, boolean isFirstElement, List<?> nodeList) {
+      /*  // new element
         if (!isFirstElement) {
             doc.appendChild(rootElementToAddAttributes);
-        }
+        }*/
 
         // node element
         // set attributes to node element
@@ -167,7 +173,11 @@ public class XmlRepo {
     }
 
     private void setListAttributeToElement(Document doc, Element nodeElement, String elementName, List<?> fieldValue) {
-        setConcatenatedListValuesAttributeToElement(doc, nodeElement, elementName, fieldValue);//todo lane child https://mkyong.com/java/how-to-create-xml-file-in-java-dom/?utm_source=mkyong.com&utm_medium=referral&utm_campaign=afterpost-related&utm_content=link3
+        if (fieldValue.get(0).getClass() == Lane.class || fieldValue.get(0).getClass() == Phase.class) {
+            setChildsToElement(doc, nodeElement, true, fieldValue);
+            return;
+        }
+        setConcatenatedListValuesAttributeToElement(doc, nodeElement, elementName, fieldValue);
     }
 
     private void setEnumAttributeToElement(Document doc, Element nodeElement, String elementName, Object enumObject) {

@@ -17,53 +17,43 @@ public class Main {
 
     public static String TIME_FORMAT = "yyyy.MM.dd.HH.mm.ss";
 
-    public static String fileName;
+    public static String baseFileName;
     public static String workingDirectory;
     public static boolean isImportedNetwork;
 
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         if (args.length == 0) {
             throw new NullPointerException("program arguments must not be null! args[0] - working directory, args [1] - (optional), network file");
         }
+        getWorkingDirectoryAndFileName(args);
 
-        CmdRepo cmdRepo = new CmdRepo();
-        CreationRepo creationRepo = new CreationRepo();
+        CreationRepo creationRepo = new CreationRepo(workingDirectory);
         XmlRepo xmlRepo = new XmlRepo();
 
-        getWorkingDirectoryAndFileName(args);
-//
-//        List<Object> cmdAndProcess = cmdRepo.startCmdAtLocation(workingDirectory);
-//        PrintWriter cmd = (PrintWriter) cmdAndProcess.get(0);
-//        Process process = (Process) cmdAndProcess.get(1);
-//
-//        //    collectConsoleOutputToFile(TEMP_WORKING_DIRECTORY, fileName);
-//        creationRepo.createInputFiles(cmd, workingDirectory, fileName, isImportedNetwork); // creates routes and SUMO config file (if no network - then network too)
-//
-//        List<SumoOutputDataFilesEnum> simulationOutputFileTypes = Arrays.asList(SumoOutputDataFilesEnum.FCD_TRACE_DATA, SumoOutputDataFilesEnum.RAW_VEHICLE_POSITION_DATA, SumoOutputDataFilesEnum.EMMISION_DATA);
-//        creationRepo.createSimulationOutputData(cmd, fileName, simulationOutputFileTypes);
-//        creationRepo.createPlainOutputFilesForEditing(cmd, fileName); //generates nodes, edges, connections, traffic light logic and type of edges files
-//
-//        cmd.close();
-//        process.waitFor();
+        creationRepo.createBaseInputFiles(baseFileName, isImportedNetwork); // creates routes and SUMO config file (if no network is declared - then network too)
+
+        for (int i = 0; i < 2; i++) {
+
+        }
+
+        List<SumoOutputDataFilesEnum> simulationOutputFileTypes = Arrays.asList(SumoOutputDataFilesEnum.FCD_TRACE_DATA, SumoOutputDataFilesEnum.RAW_VEHICLE_POSITION_DATA, SumoOutputDataFilesEnum.EMMISION_DATA);
+        creationRepo.createSimulationOutputData(baseFileName, simulationOutputFileTypes); //get simulation output
+        creationRepo.createPlainOutputFilesForEditing(baseFileName); //generates nodes, edges, connections, traffic light logic and type of edges files
 
         Network network = getNetworkFromGeneratedOutputNetworkFiles();
 
-        //get simulation output
         //analyze simulation output (and warnings from simulation progress)
+        //create fitness function
         //edit network with genetic algorithm
-        //export network to xml files
-
-
-       xmlRepo.saveNetworkToXmlFiles(workingDirectory, fileName, network, String.valueOf(1)); //todo
-
+        xmlRepo.saveNetworkToXmlFiles(workingDirectory, baseFileName, network, String.valueOf(1)); //export edited network to xml files
     }
 
     private static Network getNetworkFromGeneratedOutputNetworkFiles() {
         XmlRepo xmlRepo = new XmlRepo();
         ParserRepo parserRepo = new ParserRepo();
 
-        String fileNameBase = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd();
+        String fileNameBase = workingDirectory + baseFileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd();
 
         Document nodeDocument = xmlRepo.readXml(fileNameBase + FilesSuffixesEnum.NODES.toString());
         Map<String, List<Map<String, Object>>> nodesAttributes = parserRepo.parseDocumentToObjects(nodeDocument);
@@ -106,21 +96,11 @@ public class Main {
         isImportedNetwork = args.length == 2;
         if (!isImportedNetwork) {
             List<String> nameAndDir = newFileName(workingDirectory);
-            fileName = nameAndDir.get(0);
+            baseFileName = nameAndDir.get(0);
             workingDirectory = nameAndDir.get(1);
         } else {
-            fileName = args[1];
+            baseFileName = args[1];
         }
-    }
-
-    public static void collectConsoleOutputToFile(String workingDir, String fileName) {
-        PrintStream printStream = null;
-        try {
-            printStream = new PrintStream(new FileOutputStream(workingDir + fileName + "debugging.txt"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        System.setOut(printStream);
     }
 
     public static List<String> newFileName(String workingDir) {

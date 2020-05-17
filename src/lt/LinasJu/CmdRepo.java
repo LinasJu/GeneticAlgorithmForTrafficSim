@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class CmdRepo {
+public class CmdRepo {//todo delete if won't be used
 
     /**
      * @param location run cmd at desired location
