@@ -2,12 +2,12 @@ package lt.LinasJu;
 
 public enum FilesSuffixesEnum {
 
-    XML(".xml ", null),
-    NODES(".nod" + XML.toString(), " --node-files="),
-    EDGES(".edg" + XML.toString(), " --edge-files="),
-    CONNECTIONS(".con" + XML.toString(), " --connection-files="),
-    TRAFFIC_LIGHT_LOGICS(".tll" + XML.toString(), " --tllogic-files="),
-    TYPE_OF_EDGES(".typ" + XML.toString(), " --type-files="),
+    XML(".xml", null),
+    NODES(".nod" + XML.toString(), "--node-files="),
+    EDGES(".edg" + XML.toString(), "--edge-files="),
+    CONNECTIONS(".con" + XML.toString(), "--connection-files="),
+    TRAFFIC_LIGHT_LOGICS(".tll" + XML.toString(), "--tllogic-files="),
+    TYPE_OF_EDGES(".typ" + XML.toString(), "--type-files="),
     NETWORK(".net" + XML.toString(), null),
     ROUTES(".rou" + XML.toString(), null),
 

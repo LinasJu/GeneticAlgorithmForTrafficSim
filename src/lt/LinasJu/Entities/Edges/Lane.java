@@ -18,5 +18,5 @@ public class Lane implements Serializable {
     private Float width; //used for visualisation
     private Float endOffset; //Move the stop line back from the intersection by the given amount (effectively shortening the edge and locally enlarging the intersection)
     private List<ShapePoint> shape;
-    private Float acceleration; // optional
+    private Long acceleration; // optional
 }

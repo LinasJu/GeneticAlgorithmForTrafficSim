@@ -113,7 +113,7 @@ public class ParserRepo {
             edge.setSpeed(getFloatFromObject(edgeAttribute, "speed"));
             edge.setPriority(getLongFromObject(edgeAttribute, "priority"));
             edge.setLength(getFloatFromObject(edgeAttribute, "length"));
-            edge.setShape(getShapePointListFromObject(edgeAttribute, "shape"));
+            edge.setShape(getShapePointListFromObject(edgeAttribute));
             edge.setSpreadType(SpreadTypeEnum.get(getStringFromObject(edgeAttribute, "spreadType")));
             edge.setAllow(getVehicleEnumListFromObject(edgeAttribute, "allow"));
             edge.setDisallow(getVehicleEnumListFromObject(edgeAttribute, "disallow"));
@@ -124,7 +124,7 @@ public class ParserRepo {
             if (sidewalkWidth != null) {
                 edge.setSidewalkWidth(sidewalkWidth);
             }
-            edge.setLane(getLaneListFromObject(edgeAttribute, "lane"));
+            edge.setLane(getLaneListFromObject(edgeAttribute));
             edgeListFinal.add(edge);
         });
 
@@ -165,7 +165,7 @@ public class ParserRepo {
             type.setPriority(getLongFromObject(typeAttribute, "priority"));
             type.setSpeed(getFloatFromObject(typeAttribute, "speed"));
             type.setSidewalkWidth(getFloatFromObject(typeAttribute, "sidewalkWidth"));
-            type.setRestrictions(getRestrictionListFromObject(typeAttribute, "restriction"));
+            type.setRestrictions(getRestrictionListFromObject(typeAttribute));
             typeListFinal.add(type);
         });
         return typeListFinal;
@@ -201,7 +201,7 @@ public class ParserRepo {
             if (speed != null) {
                 connection.setSpeed(speed);
             }
-            connection.setShape(getShapePointListFromObject(connectionAttribute, "shape"));
+            connection.setShape(getShapePointListFromObject(connectionAttribute));
             connection.setUncontrolled(getBooleanFromObject(connectionAttribute, "uncontrolled"));
             connection.setAllow(getStringListFromObject(connectionAttribute, "allow"));
             connection.setDisallow(getStringListFromObject(connectionAttribute, "disallow"));
@@ -226,7 +226,7 @@ public class ParserRepo {
             tlLogic.setType(TrafficLightAlgorithmType.get(getStringFromObject(connectionAttribute, "type")));
             tlLogic.setProgramID(getLongFromObject(connectionAttribute, "programID"));
             tlLogic.setOffset(getLongFromObject(connectionAttribute, "offset"));
-            tlLogic.setPhase(getPhaseListFromObject(connectionAttribute, "phase"));
+            tlLogic.setPhase(getPhaseListFromObject(connectionAttribute));
 
             tlLogicListFinal.add(tlLogic);
         });
@@ -234,8 +234,8 @@ public class ParserRepo {
         return tlLogicListFinal;
     }
 
-    private List<Lane> getLaneListFromObject(Map<String, Object> attributes, String key) {
-        Object object = attributes.get(key);
+    private List<Lane> getLaneListFromObject(Map<String, Object> attributes) {
+        Object object = attributes.get("lane");
         if (object == null) {
             return null;
         }
@@ -259,13 +259,13 @@ public class ParserRepo {
         lane.setSpeed(getFloatFromObject(laneMap, "speed"));
         lane.setWidth(getFloatFromObject(laneMap, "width"));
         lane.setEndOffset(getFloatFromObject(laneMap, "endOffset"));
-        lane.setShape(getShapePointListFromObject(laneMap, "shape"));
-        lane.setAcceleration(getFloatFromObject(laneMap, "acceleration"));
+        lane.setShape(getShapePointListFromObject(laneMap));
+        lane.setAcceleration(getLongFromObject(laneMap, "acceleration"));
         return lane;
     }
 
-    private List<Restriction> getRestrictionListFromObject(Map<String, Object> attributes, String key) {
-        Object object = attributes.get(key);
+    private List<Restriction> getRestrictionListFromObject(Map<String, Object> attributes) {
+        Object object = attributes.get("restriction");
         if (object == null) {
             return null;
         }
@@ -289,8 +289,8 @@ public class ParserRepo {
         return attributes.get(key) == null ? null : Long.parseLong(String.valueOf(attributes.get(key)));
     }
 
-    private List<ShapePoint> getShapePointListFromObject(Map<String, Object> attributes, String key) {
-        List<String> shapePointStringList = getStringListFromObject(attributes, key); //separated by spaces different shape points
+    private List<ShapePoint> getShapePointListFromObject(Map<String, Object> attributes) {
+        List<String> shapePointStringList = getStringListFromObject(attributes, "shape"); //separated by spaces different shape points
         if (shapePointStringList == null) {
             return null;
         }
@@ -333,8 +333,8 @@ public class ParserRepo {
         return stringList.stream().map(VehicleClassEnum::get).collect(Collectors.toList());
     }
 
-    private List<Phase> getPhaseListFromObject(Map<String, Object> attributes, String key) {
-        Object object = attributes.get(key);
+    private List<Phase> getPhaseListFromObject(Map<String, Object> attributes) {
+        Object object = attributes.get("phase");
         if (object == null) {
             return null;
         }
@@ -354,7 +354,6 @@ public class ParserRepo {
         phase.setMinDur(getLongFromObject(laneMap, "minDur"));
         phase.setMaxDur(getLongFromObject(laneMap, "maxDur"));
         phase.setName(getStringFromObject(laneMap, "name"));
-//        phase.setNext(getStringListFromObject()); todo jeigu reiks
         return phase;
     }
 

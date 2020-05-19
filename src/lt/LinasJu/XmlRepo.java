@@ -39,8 +39,8 @@ public class XmlRepo {
         return null;
     }
 
-    public void saveNetworkToXmlFiles(String workingDirectory, String filename, Network network, String index) {
-        String outputFileNameBase = workingDirectory + filename + index;
+    public void saveNetworkToXmlFiles(String workingDirectory, String filename, Network network) {
+        String outputFileNameBase = workingDirectory + filename;
 
         saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.NODES.toString(), Collections.singletonList(network.getNodes()));
         saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.EDGES.toString(), Arrays.asList(network.getEdges(), network.getRoundabouts()));
@@ -66,9 +66,8 @@ public class XmlRepo {
             Element rootElement = doc.createElement(rootNodeElementName);
             listOfNodeLists.forEach(nodeList -> {
                 //for every other nodeList instead of first, it is needed to set elementName
-                boolean isFirstElement = nodeList == listOfNodeLists.get(0);
-                setChildsToElement(doc, rootElement, isFirstElement, (List<?>) nodeList);
-                if (isFirstElement) {
+                setChildsToElement(doc, rootElement, (List<?>) nodeList);
+                if (nodeList == listOfNodeLists.get(0)) {
                     doc.appendChild(rootElement);
                 }
             });
@@ -95,15 +94,10 @@ public class XmlRepo {
     /**
      * This function if needed creates new additional Elements, adds passed List of values as new elements' child.
      * @param doc The main document that is being created.
-     * @param rootElementToAddAttributes
-     * @param isFirstElement if not null, creates new element with this name and adds attributes to created Element
+     * @param rootElementToAddAttributes The element to which will be added attributes.
      * @param nodeList List of nodes to be added to element
      */
-    private void setChildsToElement(Document doc, Element rootElementToAddAttributes, boolean isFirstElement, List<?> nodeList) {
-      /*  // new element
-        if (!isFirstElement) {
-            doc.appendChild(rootElementToAddAttributes);
-        }*/
+    private void setChildsToElement(Document doc, Element rootElementToAddAttributes, List<?> nodeList) {
 
         // node element
         // set attributes to node element
@@ -174,7 +168,7 @@ public class XmlRepo {
 
     private void setListAttributeToElement(Document doc, Element nodeElement, String elementName, List<?> fieldValue) {
         if (fieldValue.get(0).getClass() == Lane.class || fieldValue.get(0).getClass() == Phase.class) {
-            setChildsToElement(doc, nodeElement, true, fieldValue);
+            setChildsToElement(doc, nodeElement, fieldValue);
             return;
         }
         setConcatenatedListValuesAttributeToElement(doc, nodeElement, elementName, fieldValue);

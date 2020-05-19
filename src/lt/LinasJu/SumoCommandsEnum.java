@@ -2,10 +2,10 @@ package lt.LinasJu;
 
 public enum SumoCommandsEnum {
 
-    NETGENERATE("netgenerate "), // for generating abstract road network
-    NETCONVERT("netconvert "), // import and convert from Open Street Map or Visum
-    SUMO("sumo "),
-    PYTHON("py "),
+    NETGENERATE("netgenerate"), // for generating abstract road network
+    NETCONVERT("netconvert"), // import and convert from Open Street Map or Visum
+    SUMO("sumo"),
+    PYTHON("py"),
     ROAD_NETWORK_INPUT("-n"),
     SUMO_NET_FILE_INPUT_FULL("-s"),
 

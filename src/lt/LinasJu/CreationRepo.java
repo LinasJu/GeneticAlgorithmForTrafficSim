@@ -82,6 +82,14 @@ public class CreationRepo {
 
 
     /**
+ * @param networkFileName network file name
+     * @param routeFileName   route file name
+     */
+    public void createSumoConfigFile(String networkFileName, String routeFileName) {
+        createSumoConfigFile(networkFileName, routeFileName, null, null);
+    }
+
+    /**
      * @param networkFileName network file name
      * @param routeFileName   route file name
      * @param beginValue      beginning of the simulation, default - 0
@@ -144,22 +152,21 @@ public class CreationRepo {
         shellExec.execute(SumoCommandsEnum.PYTHON.toString(), workingDir, true, getRandomRoutesCommandArgs(fileName)); // 2. create random routes for network file
         System.out.println(shellExec.getOutput());
         System.out.println(shellExec.getError());
-        createSumoConfigFile(fileName); // 3. setup SUMO configuration file
     }
 
     @SneakyThrows
-    public void createSimulationOutputData(String fileName, List<SumoOutputDataFilesEnum> outputDataFilesEnums) {
+    public void runNetworkSimulationAndGetOutput(String fileName, List<SumoOutputDataFilesEnum> outputDataFilesEnums) {
         String simulationOutputFileName = fileName + "SimulationOutput.txt";
         List<String> simulationArgs = getSimulationOutputCommandArgs(fileName, outputDataFilesEnums);
         createEmptyFile(workingDir + simulationOutputFileName);
         shellExec.execute(SumoCommandsEnum.SUMO.toString(), workingDir, true, simulationArgs.toArray(String[]::new)); // 4. simulate and generate output
         System.out.println(shellExec.getOutput());
-        System.out.println(shellExec.getError());//todo isvesti i faila errorus kuriuos Kanalizuoti
+        System.out.println(shellExec.getError());//todo isvesti i faila errorus kuriuos analizuoti
     }
 
     //used for editing. generates nodes, edges, connections, traffic light logic and type of edges files
     @SneakyThrows
-    public void createPlainOutputFilesForEditing(String fileName) {
+    public void createPlainOutputFilesForEditingFromNetworkFile(String fileName) {
         List<String> args = new ArrayList<>();
         args.add(SumoCommandsEnum.SUMO_NET_FILE_INPUT_FULL.toString());
         args.add(fileName + FilesSuffixesEnum.NETWORK.toString());
@@ -190,8 +197,9 @@ public class CreationRepo {
         for (FilesSuffixesEnum suffix : usedXmlFiles) {
             args.add(suffix.getDeclarationCommand() + fileName + suffix.toString());
         }
-        String outputFileName = String.format(SumoCommandsEnum.NETWORK_OUTPUT_FILE_NAME.toString(), fileName);
-        args.add(outputFileName);
+
+        args.add(SumoCommandsEnum.NETWORK_OUTPUT_FILE_NAME.toString());
+        args.add(fileName + FilesSuffixesEnum.NETWORK.toString());
 
         shellExec.execute(SumoCommandsEnum.NETCONVERT.toString(), workingDir, true, args.toArray(String[]::new));
         System.out.println(shellExec.getOutput());

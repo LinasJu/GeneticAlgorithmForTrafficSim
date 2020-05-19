@@ -16,9 +16,9 @@ import java.util.List;
 public class Network {
     List<Node> nodes;
     List<Edge> edges;
-    List<Roundabout> roundabouts;
+    List<Roundabout> roundabouts; //written to edge file under edges
     List<Type> edgeTypes;
     List<Connection> connections;
     List<TlLogic> trafficLightLogics;
-    List<Connection> trafficLightLogicsConnections;
+    List<Connection> trafficLightLogicsConnections;  //written to tll file under traffic Light logics
 }
