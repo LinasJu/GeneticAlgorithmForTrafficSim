@@ -1,9 +1,16 @@
 package lt.LinasJu;
 
+import lt.LinasJu.Entities.Connections.Connection;
+import lt.LinasJu.Entities.Edges.Edge;
 import lt.LinasJu.Entities.Edges.Lane;
+import lt.LinasJu.Entities.Edges.Roundabout;
 import lt.LinasJu.Entities.Network;
+import lt.LinasJu.Entities.Nodes.Node;
+import lt.LinasJu.Entities.SimulationOutputData.TimestepData;
 import lt.LinasJu.Entities.TlLogics.Phase;
 import lt.LinasJu.Entities.TlLogics.SignalStateEnum;
+import lt.LinasJu.Entities.TlLogics.TlLogic;
+import lt.LinasJu.Entities.TypeOfEdge.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -19,11 +26,13 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class XmlRepo {
     CreationRepo creationRepo = new CreationRepo();
+    ParserRepo parserRepo = new ParserRepo();
 
-    public Document readXml(String xmlFileName) {
+    private Document readXml(String xmlFileName) {
         try {
             //creating a constructor of file class and parsing an XML file
             File file = new File(xmlFileName);
@@ -191,4 +200,46 @@ public class XmlRepo {
         setSimpleAttributeToElement(doc, nodeElement, elementName, joiner.toString());
     }
 
+    public Network getNetworkFromGeneratedXmlNetworkFiles(String workingDirectory, String fileName) {
+
+        String fileNameBase = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd();
+
+        Document nodeDocument = readXml(fileNameBase + FilesSuffixesEnum.NODES.toString());
+        Map<String, List<Map<String, Object>>> nodesAttributes = parseDocumentToObjects(Objects.requireNonNull(nodeDocument));
+
+        Document edgeDocument = readXml(fileNameBase + FilesSuffixesEnum.EDGES.toString());
+        Map<String, List<Map<String, Object>>> edgeAttributes = parseDocumentToObjects(Objects.requireNonNull(edgeDocument));
+
+        Document typeDocument = readXml(fileNameBase + FilesSuffixesEnum.TYPE_OF_EDGES.toString());
+        Map<String, List<Map<String, Object>>> typeAttributes = parseDocumentToObjects(Objects.requireNonNull(typeDocument));
+
+        Document connectionDocument = readXml(fileNameBase + FilesSuffixesEnum.CONNECTIONS.toString());
+        Map<String, List<Map<String, Object>>> connectionAttributes = parseDocumentToObjects(Objects.requireNonNull(connectionDocument));
+
+        Document tllDocument = readXml(fileNameBase + FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS.toString());
+        Map<String, List<Map<String, Object>>> tllAttributes = parseDocumentToObjects(Objects.requireNonNull(tllDocument));
+
+        List<Node> nodes = parserRepo.getNodesFromAttributeMap(nodesAttributes);
+        List<Edge> edges = parserRepo.getEdgesFromEdgeAttributes(edgeAttributes);
+        List<Roundabout> roundabouts = parserRepo.getRoundaboutsFromAttributeMap(edgeAttributes);
+        List<Type> types = parserRepo.getTypesFromAttributeMap(typeAttributes);
+        List<Connection> connections = parserRepo.getConnectionsFromAttributeMap(connectionAttributes);
+        List<TlLogic> TlLogics = parserRepo.getTllogicsFromTllAttributeMap(tllAttributes);
+        List<Connection> TLLogicsConnections = parserRepo.getConnectionsFromAttributeMap(tllAttributes);
+
+
+        Network network = new Network();
+        network.setNodes(nodes);
+        network.setEdges(edges);
+        network.setRoundabouts(roundabouts);
+        network.setEdgeTypes(types);
+        network.setConnections(connections);
+        network.setTrafficLightLogics(TlLogics);
+        network.setTrafficLightLogicsConnections(TLLogicsConnections);
+        return network;
+    }
+
+    private Map<String, List<Map<String, Object>>> parseDocumentToObjects(Document document) {
+        return parserRepo.parseDocumentToObjects(Objects.requireNonNull(document));
+    }
 }
