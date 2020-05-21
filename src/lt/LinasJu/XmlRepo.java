@@ -239,6 +239,15 @@ public class XmlRepo {
         return network;
     }
 
+    public List<TlLogic> getTlLogicsFromGeneratedXmlNetworkFiles(String workingDirectory, String fileNameBase) {
+        String fileName = workingDirectory + fileNameBase + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd();
+
+        Document tllDocument = readXml(fileName + FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS.toString());
+        Map<String, List<Map<String, Object>>> tllAttributes = parseDocumentToObjects(Objects.requireNonNull(tllDocument));
+
+        return parserRepo.getTllogicsFromTllAttributeMap(tllAttributes);
+    }
+
     private Map<String, List<Map<String, Object>>> parseDocumentToObjects(Document document) {
         return parserRepo.parseDocumentToObjects(Objects.requireNonNull(document));
     }
