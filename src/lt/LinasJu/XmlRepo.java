@@ -48,14 +48,20 @@ public class XmlRepo {
         return null;
     }
 
-    public void saveNetworkToXmlFiles(String workingDirectory, String filename, Network network) {
-        String outputFileNameBase = workingDirectory + filename;
+    public void saveWholeNewNetworkToXmlFiles(String workingDirectory, String fileName, Network network) {
+        String outputFileNameBase = workingDirectory + fileName;
 
         saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.NODES.toString(), Collections.singletonList(network.getNodes()));
         saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.EDGES.toString(), Arrays.asList(network.getEdges(), network.getRoundabouts()));
         saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.TYPE_OF_EDGES.toString(), Collections.singletonList(network.getEdgeTypes()));
         saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.CONNECTIONS.toString(), Collections.singletonList(network.getConnections()));
         saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS.toString(), Arrays.asList(network.getTrafficLightLogics(), network.getTrafficLightLogicsConnections()));
+    }
+
+    public void saveNewTrafficLightLogicFileFromNetwork(String workingDirectory, String fileName, Network network) {
+        String outputFileNameBase = workingDirectory + fileName;
+        saveNetworkEntitiesToXmlFile(outputFileNameBase + FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS.toString(), Arrays.asList(network.getTrafficLightLogics(), network.getTrafficLightLogicsConnections()));
+
     }
 
     /**
@@ -237,15 +243,6 @@ public class XmlRepo {
         network.setTrafficLightLogics(TlLogics);
         network.setTrafficLightLogicsConnections(TLLogicsConnections);
         return network;
-    }
-
-    public List<TlLogic> getTlLogicsFromGeneratedXmlNetworkFiles(String workingDirectory, String fileNameBase) {
-        String fileName = workingDirectory + fileNameBase + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd();
-
-        Document tllDocument = readXml(fileName + FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS.toString());
-        Map<String, List<Map<String, Object>>> tllAttributes = parseDocumentToObjects(Objects.requireNonNull(tllDocument));
-
-        return parserRepo.getTllogicsFromTllAttributeMap(tllAttributes);
     }
 
     private Map<String, List<Map<String, Object>>> parseDocumentToObjects(Document document) {

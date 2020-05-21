@@ -148,6 +148,9 @@ public class SimulationDataRepo extends DefaultHandler {
 
         Map<Integer, Vehicle> vehicleList = new HashMap<>();
         for (TimestepData timestepData : rawSimulationOutputData) {
+            if (timestepData.getTimestepVehicles() == null) {
+                continue;
+            }
             for (TimestepVehicle timestepVehicle : timestepData.getTimestepVehicles()) {
                 if (vehicleList.get(timestepVehicle.getId()) == null) {
                     vehicleList.put(timestepVehicle.getId(), new Vehicle(timestepVehicle.getId()));

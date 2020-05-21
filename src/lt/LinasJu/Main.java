@@ -3,6 +3,7 @@ package lt.LinasJu;
 import lt.LinasJu.Entities.GeneticAlgorithm.Gene;
 import lt.LinasJu.Entities.Network;
 import lt.LinasJu.Entities.SimulationOutputData.Vehicle;
+import lt.LinasJu.Entities.TlLogics.TlLogic;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -37,35 +38,50 @@ public class Main {
         creationRepo.createBaseInputFiles(baseFileName, isImportedNetwork); // creates routes for network and SUMO config file (if no network is declared - then network too)
 
         List<SumoOutputDataFilesEnum> simulationOutputFileTypes = Collections.singletonList(SumoOutputDataFilesEnum.EMMISION_DATA);//kol kas pakanka emission informacijos
-        List<FilesSuffixesEnum> fileTypesToCreateNetworkFrom = Arrays.asList(FilesSuffixesEnum.NODES, FilesSuffixesEnum.EDGES, FilesSuffixesEnum.TYPE_OF_EDGES, FilesSuffixesEnum.CONNECTIONS, FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS);
+        List<FilesSuffixesEnum> fileTypesToCreateNetworkFrom = Arrays.asList(FilesSuffixesEnum.NODES,
+                FilesSuffixesEnum.EDGES,
+                FilesSuffixesEnum.TYPE_OF_EDGES,
+                FilesSuffixesEnum.CONNECTIONS,
+                FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS);
 
-        creationRepo.createPlainOutputFilesForEditingFromNetworkFile(baseFileName); //generates nodes, edges, connections, traffic light logic and type of edges files
+        //generates nodes, edges, connections, traffic light logic and type of edges files
+        creationRepo.createPlainOutputFilesForEditingFromNetworkFile(baseFileName);
+
+        //the main network from xml files that will be modified to get the best solution
         Network theNetwork = xmlRepo.getNetworkFromGeneratedXmlNetworkFiles(workingDirectory, baseFileName);
 
+        //creating random population of genes, where first gene will be from network itself
         List<Gene> populationOfGenes = gaRepo.getRandomPopulationOfGenesByTlLogics(theNetwork.getTrafficLightLogics(), sizeOfPopulation);
 
-        for (int iterationNo = 0; iterationNo < maxIterations; iterationNo++) { //arba perdaryti kad kai atsakymų skirtumai yra mažesni nei epsilon
-            String fileName = iterationNo == 0 ? baseFileName : baseFileName + iterationNo;
+        for (int iterationNo = 0; iterationNo < maxIterations; iterationNo++) {
 
             Map<Gene, Float> populationGenesWithTheirFitnessScore = new HashMap<>();
-            for (Gene gene : populationOfGenes) {
+            for (int geneIteration = 0; geneIteration < populationOfGenes.size(); geneIteration++) {
+                String fileName = geneIteration == 0 ? baseFileName : baseFileName + iterationNo;
+                Gene gene = populationOfGenes.get(geneIteration);
                 creationRepo.createSumoConfigFile(fileName, routeFileName); // 3. setup SUMO configuration file
 
                 creationRepo.runNetworkSimulationAndGetOutput(fileName, simulationOutputFileTypes); //get simulation output
-                //creationRepo.createPlainOutputFilesForEditingFromNetworkFile(fileName); //generates nodes, edges, connections, traffic light logic and type of edges files
 
                 List<Vehicle> sortedSimulationVehicles = simulationDataRepo.getVehiclesSimulationOutput(workingDirectory, fileName, simulationOutputFileTypes);
                 populationGenesWithTheirFitnessScore.put(gene, gaRepo.calculatefitness(sortedSimulationVehicles));
 
+                List<TlLogic> newTlLogics = gaRepo.setNewTlLogicsPhaseDurationsWithGeneValues(gene, theNetwork.getTrafficLightLogics());
+                theNetwork.setTrafficLightLogics(newTlLogics);
 
-//todo
-                xmlRepo.saveNetworkToXmlFiles(workingDirectory, fileName, theNetwork); //export edited network to xml files
-                creationRepo.createNetworkFromNetworkFiles(fileName, fileTypesToCreateNetworkFrom);
+                if (geneIteration == 0) {
+                    xmlRepo.saveWholeNewNetworkToXmlFiles(workingDirectory, baseFileName + iterationNo, theNetwork); //export new network to xml files
+                } else {
+                    xmlRepo.saveNewTrafficLightLogicFileFromNetwork(workingDirectory, baseFileName + iterationNo, theNetwork); //export edited network TlLogic to xml file
+                }
+
+                creationRepo.createNetworkFromNetworkFiles(baseFileName + iterationNo, fileTypesToCreateNetworkFrom);
             }
             listOfEveryPopulationGenesWithFitnessScore.add(populationGenesWithTheirFitnessScore);
 
-            //todo edit network with genetic algorithm (fitness function, atrinkimas, kryzminimas, mutacija)
+            populationOfGenes = gaRepo.modifyPopulationOfGenes(populationGenesWithTheirFitnessScore);
 
+            //todo edit network with genetic algorithm (fitness function, atrinkimas, kryzminimas, mutacija)
         }
     }
 

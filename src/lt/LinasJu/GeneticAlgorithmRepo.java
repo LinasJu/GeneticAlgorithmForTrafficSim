@@ -11,17 +11,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 public class GeneticAlgorithmRepo {
 
     private Long maxPhaseDuration = 300L;
     private Long minPhaseDuration = 1L;
-    private Integer sizeOfPopulation = 20;
     private static double mutationRate = 0.05;
     private static double crossoverRate = 1; //optional. usually crossover is always applied
-
-
 
     //the lowest fitness is the best
     public Float calculatefitness(List<Vehicle> vehicles) {
@@ -41,6 +37,7 @@ public class GeneticAlgorithmRepo {
      */
     public Gene convertTlLogicsToGene(List<TlLogic> tlLogics) {
         Gene gene = new Gene();
+        List<Allele> alleles = new ArrayList<>();
         for (TlLogic tlLogic : tlLogics) {
             for (int i = 0; i < tlLogic.getPhase().size(); i++) {
                 Phase phase = tlLogic.getPhase().get(i);
@@ -48,8 +45,10 @@ public class GeneticAlgorithmRepo {
                 allele.setPhaseDuration(phase.getDuration());
                 allele.setTlLogicId(tlLogic.getId());
                 allele.setTlLogicsPhaseListId(i);
+                alleles.add(allele);
             }
         }
+        gene.setDurationOfPhases(alleles);
         return gene;
     }
 
@@ -70,7 +69,6 @@ public class GeneticAlgorithmRepo {
             phaseIdDurationMap.computeIfAbsent(allele.getTlLogicsPhaseListId(), k -> allele.getPhaseDuration());
         }
 
-        //todo check parsing of map ^^^^
         for (TlLogic tlLogic : tlLogics) {
             for (int i = 0; i < tlLogic.getPhase().size(); i++) {
                 Map<Integer, Long> samePhaseIdDurations = geneTlLogicIdPhaseIdDurationMap.get(tlLogic.getId());
@@ -82,8 +80,15 @@ public class GeneticAlgorithmRepo {
     }
 
     private List<Allele> generateNewRandomDurations(List<Allele> alleles) {
-        alleles.forEach(allele -> allele.setPhaseDuration(generateRandomDurationInRange()));
-        return alleles;
+        List<Allele> newAlleles = new ArrayList<>();
+        alleles.forEach(allele -> {
+            Allele newAllele = new Allele();
+            newAllele.setTlLogicId(allele.getTlLogicId());
+            newAllele.setTlLogicsPhaseListId(allele.getTlLogicsPhaseListId());
+            newAllele.setPhaseDuration(generateRandomDurationInRange());
+            newAlleles.add(newAllele);
+        });
+        return newAlleles;
     }
 
     public List<Gene> getRandomPopulationOfGenesByTlLogics(List<TlLogic> tlLogics, int sizeOfPopulation) {
@@ -93,13 +98,88 @@ public class GeneticAlgorithmRepo {
         genes.add(baseGene); //first gene with be from TlLogics
 
         for (int i = 1; i < sizeOfPopulation; i++) {
-            baseGene.setDurationOfPhases(generateNewRandomDurations(baseGene.getDurationOfPhases()));
-            genes.add(baseGene);
+            Gene newRandomGene = new Gene();
+            newRandomGene.setDurationOfPhases(generateNewRandomDurations(baseGene.getDurationOfPhases()));
+            genes.add(newRandomGene);
         }
         return genes;
     }
 
     private Long generateRandomDurationInRange() {
         return ThreadLocalRandom.current().nextLong(minPhaseDuration, maxPhaseDuration + 1);
+    }
+
+    public List<Gene> modifyPopulationOfGenes(Map<Gene, Float> populationGenesWithTheirFitnessScore) {
+
+        return null;
+    }
+
+
+    //selection functions
+    public void proportionateSelection(Map<Gene, Float> populationGenesWithTheirFitnessScore) {
+
+    }
+
+    public void rankingSelection() {
+
+    }
+
+    public void tournamentSelection() {
+
+    }
+    //crossover functions
+
+    public void partiallyMappedCrossover() {
+
+    }
+
+    public void cycleCrossover() {
+
+    }
+
+    public void orderBasedCrossover1() {
+
+    }
+
+    public void orderBasedCrossover2() {
+
+    }
+
+    public void positionBasedCrossover() {
+
+    }
+
+    public void votingRecombinationCrossover() {
+
+    }
+
+    public void alternatinPositionCrossover() {
+
+    }
+
+    //mutation functions
+
+    public void displacementMutation() {
+
+    }
+
+    public void exchangeMutation() {
+
+    }
+
+    public void insertionMutation() {
+
+    }
+
+    public void simpleInversionMutation() {
+
+    }
+
+    public void inversionMutation() {
+
+    }
+
+    public void scrambleMutation() {
+
     }
 }

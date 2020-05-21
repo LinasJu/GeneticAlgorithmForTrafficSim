@@ -120,7 +120,7 @@ public class CreationRepo {
         String networkName = networkFileName.concat(FilesSuffixesEnum.NETWORK.toString());
         String routeName = (routeFileName != null ? routeFileName : networkFileName).concat(FilesSuffixesEnum.ROUTES.toString()); // todo jei output file name yra kitoks nei networkFileName
         beginValue = beginValue != null ? beginValue : 0;
-        endValue = endValue != null ? endValue : 2000;
+        endValue = endValue != null ? endValue : 1000;
 
         return Arrays.asList("<configuration>", "<input>", "<net-file value=\"" + networkName + "\"/>", "<route-files value=\"" + routeName + "\"/>", "</input>", "<time>", "<begin value =\"" + beginValue + "\"/>", "<end value=\"" + endValue + "\"/>", "</time>", "</configuration>");
     }
@@ -156,12 +156,12 @@ public class CreationRepo {
 
     @SneakyThrows
     public void runNetworkSimulationAndGetOutput(String fileName, List<SumoOutputDataFilesEnum> outputDataFilesEnums) {
-        String simulationOutputFileName = fileName + "SimulationOutput.txt";
+//        String simulationOutputFileName = fileName + "SimulationOutput.txt"; for debugging
+//        createEmptyFile(workingDir + simulationOutputFileName);
         List<String> simulationArgs = getSimulationOutputCommandArgs(fileName, outputDataFilesEnums);
-        createEmptyFile(workingDir + simulationOutputFileName);
         shellExec.execute(SumoCommandsEnum.SUMO.toString(), workingDir, true, simulationArgs.toArray(String[]::new)); // 4. simulate and generate output
         System.out.println(shellExec.getOutput());
-        System.out.println(shellExec.getError());//todo isvesti i faila errorus kuriuos analizuoti
+        System.out.println(shellExec.getError());
     }
 
     //used for editing. generates nodes, edges, connections, traffic light logic and type of edges files
