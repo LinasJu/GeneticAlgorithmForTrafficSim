@@ -20,14 +20,14 @@ public class GeneticAlgorithmRepo {
     private static double crossoverRate = 1; //optional. usually crossover is always applied
 
     //the lowest fitness is the best
-    public Float calculatefitness(List<Vehicle> vehicles) {
-        Float sum = 0f;
+    public Double calculatefitness(List<Vehicle> vehicles) {
+        Double sum = 0d;
         for (Vehicle vehicle : vehicles) {
             for (Float waiting : vehicle.getWaitings()) {
                 sum += waiting;
             }
         }
-        return sum;
+        return sum == 0 ? Double.POSITIVE_INFINITY :  1/sum;
     }
 
     /**
@@ -109,78 +109,11 @@ public class GeneticAlgorithmRepo {
         return ThreadLocalRandom.current().nextLong(minPhaseDuration, maxPhaseDuration + 1);
     }
 
-    public List<Gene> modifyPopulationOfGenes(Map<Gene, Float> populationGenesWithTheirFitnessScore) {
+    //modifying gene population for trying to get better fitness score
+    public List<Gene> modifyPopulationOfGenes(Map<Gene, Double> populationGenesWithTheirFitnessScore) {
 
+        //todo
 
         return null;
-    }
-
-
-    //selection functions
-    public void proportionateSelection(Map<Gene, Float> populationGenesWithTheirFitnessScore) {
-
-    }
-
-    public void rankingSelection() {
-
-    }
-
-    public void tournamentSelection() {
-
-    }
-    //crossover functions
-
-    public void partiallyMappedCrossover() {
-
-    }
-
-    public void cycleCrossover() {
-
-    }
-
-    public void orderBasedCrossover1() {
-
-    }
-
-    public void orderBasedCrossover2() {
-
-    }
-
-    public void positionBasedCrossover() {
-
-    }
-
-    public void votingRecombinationCrossover() {
-
-    }
-
-    public void alternatinPositionCrossover() {
-
-    }
-
-    //mutation functions
-
-    public void displacementMutation() {
-
-    }
-
-    public void exchangeMutation() {
-
-    }
-
-    public void insertionMutation() {
-
-    }
-
-    public void simpleInversionMutation() {
-
-    }
-
-    public void inversionMutation() {
-
-    }
-
-    public void scrambleMutation() {
-
     }
 }

@@ -18,7 +18,7 @@ public class Main {
     public static String routeFileName;
     public static boolean isImportedNetwork;
 
-    private static List<Map<Gene, Float>> listOfEveryPopulationGenesWithFitnessScore = new ArrayList<>();// to compare which Traffic light logic is the best
+    private static List<Map<Gene, Double>> listOfEveryPopulationGenesWithFitnessScore = new ArrayList<>();// to compare which Traffic light logic is the best
 
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -55,7 +55,7 @@ public class Main {
 
         for (int iterationNo = 0; iterationNo < maxIterations; iterationNo++) {
 
-            Map<Gene, Float> populationGenesWithTheirFitnessScore = new HashMap<>();
+            Map<Gene, Double> populationGenesWithTheirFitnessScore = new HashMap<>();
             for (int geneIteration = 0; geneIteration < populationOfGenes.size(); geneIteration++) {
                 String fileName = geneIteration == 0 ? baseFileName : baseFileName + iterationNo;
                 Gene gene = populationOfGenes.get(geneIteration);
@@ -79,7 +79,7 @@ public class Main {
             }
             listOfEveryPopulationGenesWithFitnessScore.add(populationGenesWithTheirFitnessScore);
 
-            populationOfGenes = gaRepo.modifyPopulationOfGenes(populationGenesWithTheirFitnessScore);
+            populationOfGenes = gaRepo.modifyPopulationOfGenes(populationGenesWithTheirFitnessScore); //modifying and getting new population of genes to work with
 
             //todo edit network with genetic algorithm (fitness function, atrinkimas, kryzminimas, mutacija)
         }
