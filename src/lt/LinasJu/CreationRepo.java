@@ -1,6 +1,7 @@
 package lt.LinasJu;
 
 import lombok.SneakyThrows;
+import lt.LinasJu.Utils.ShellExec;
 
 import java.io.File;
 import java.io.IOException;

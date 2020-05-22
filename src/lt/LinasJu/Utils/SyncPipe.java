@@ -1,4 +1,4 @@
-package lt.LinasJu;
+package lt.LinasJu.Utils;
 
 import java.io.InputStream;
 import java.io.OutputStream;

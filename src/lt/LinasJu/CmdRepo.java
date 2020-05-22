@@ -1,5 +1,7 @@
 package lt.LinasJu;
 
+import lt.LinasJu.Utils.SyncPipe;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;

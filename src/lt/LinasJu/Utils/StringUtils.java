@@ -1,4 +1,4 @@
-package lt.LinasJu;
+package lt.LinasJu.Utils;
 
 public class StringUtils {
     public static String decapitalize(String string) {

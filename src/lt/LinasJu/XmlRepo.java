@@ -6,11 +6,11 @@ import lt.LinasJu.Entities.Edges.Lane;
 import lt.LinasJu.Entities.Edges.Roundabout;
 import lt.LinasJu.Entities.Network;
 import lt.LinasJu.Entities.Nodes.Node;
-import lt.LinasJu.Entities.SimulationOutputData.TimestepData;
 import lt.LinasJu.Entities.TlLogics.Phase;
 import lt.LinasJu.Entities.TlLogics.SignalStateEnum;
 import lt.LinasJu.Entities.TlLogics.TlLogic;
 import lt.LinasJu.Entities.TypeOfEdge.Type;
+import lt.LinasJu.Utils.StringUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -26,7 +26,6 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class XmlRepo {
     CreationRepo creationRepo = new CreationRepo();

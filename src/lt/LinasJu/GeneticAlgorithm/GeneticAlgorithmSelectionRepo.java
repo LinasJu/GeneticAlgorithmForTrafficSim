@@ -1,4 +1,4 @@
-package lt.LinasJu;
+package lt.LinasJu.GeneticAlgorithm;
 
 import lt.LinasJu.Entities.GeneticAlgorithm.Gene;
 
@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * selection functions are dedicated to extract the best parent by different techniques
+ * selection functions are dedicated to extract parents from population by different techniques
  */
 public class GeneticAlgorithmSelectionRepo {
 

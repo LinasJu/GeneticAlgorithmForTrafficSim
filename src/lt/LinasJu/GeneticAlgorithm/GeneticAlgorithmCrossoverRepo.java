@@ -1,4 +1,4 @@
-package lt.LinasJu;
+package lt.LinasJu.GeneticAlgorithm;
 
 public class GeneticAlgorithmCrossoverRepo {
     //crossover functions

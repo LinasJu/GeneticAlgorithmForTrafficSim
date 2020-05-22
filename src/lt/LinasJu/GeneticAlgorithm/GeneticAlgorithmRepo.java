@@ -1,4 +1,4 @@
-package lt.LinasJu;
+package lt.LinasJu.GeneticAlgorithm;
 
 import lt.LinasJu.Entities.GeneticAlgorithm.Allele;
 import lt.LinasJu.Entities.GeneticAlgorithm.Gene;
@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class GeneticAlgorithmRepo {
+
+    GeneticAlgorithmSelectionRepo gaSelectionRepo = new GeneticAlgorithmSelectionRepo();
 
     private Long maxPhaseDuration = 300L;
     private Long minPhaseDuration = 1L;
@@ -112,6 +114,7 @@ public class GeneticAlgorithmRepo {
     //modifying gene population for trying to get better fitness score
     public List<Gene> modifyPopulationOfGenes(Map<Gene, Double> populationGenesWithTheirFitnessScore) {
 
+      //  gaSelectionRepo.getPairsOfGenes(populationGenesWithTheirFitnessScore, )
         //todo
 
         return null;

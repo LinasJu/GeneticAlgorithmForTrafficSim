@@ -4,6 +4,7 @@ import lt.LinasJu.Entities.GeneticAlgorithm.Gene;
 import lt.LinasJu.Entities.Network;
 import lt.LinasJu.Entities.SimulationOutputData.Vehicle;
 import lt.LinasJu.Entities.TlLogics.TlLogic;
+import lt.LinasJu.GeneticAlgorithm.GeneticAlgorithmRepo;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
