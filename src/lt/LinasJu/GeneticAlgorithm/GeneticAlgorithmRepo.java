@@ -34,8 +34,8 @@ public class GeneticAlgorithmRepo {
 
     /**
      * Function dedicated to convert tlLogic List to Gene for further edition with Genetic algorithm
-     * @param tlLogics
-     * @return
+     * @param tlLogics Trafic light logics used in Network entity
+     * @return Generated gene usable for Genetic Algorithm
      */
     public Gene convertTlLogicsToGene(List<TlLogic> tlLogics) {
         Gene gene = new Gene();
@@ -106,9 +106,9 @@ public class GeneticAlgorithmRepo {
     }
 
     //modifying gene population for trying to get better fitness score
-    public List<Gene> modifyPopulationOfGenes(Map<Gene, Double> populationGenesWithTheirFitnessScore) {
+    public List<Gene> modifyPopulationOfGenes(Map<Gene, Double> populationGenesWithTheirFitnessScore, SelectionType selectionType) {
 
-        List<List<Gene>> listOfGenePairs = gaSelectionRepo.getGenePairsBySelectionType(populationGenesWithTheirFitnessScore, SelectionType.PROPORTIONATE);
+        List<List<Gene>> listOfGenePairs = gaSelectionRepo.getGenePairsBySelectionType(populationGenesWithTheirFitnessScore, selectionType);
 
         List<Gene> newPopulation = gaCrossoverRepo.getNewPopulationOfGenesByCrossoverType(listOfGenePairs, CrossoverType.PARTIALLY_MAPPED);
 

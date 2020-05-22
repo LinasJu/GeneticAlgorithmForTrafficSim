@@ -1,5 +1,8 @@
 package lt.LinasJu.GeneticAlgorithm.GeneticOperators;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lt.LinasJu.Entities.GeneticAlgorithm.Gene;
 import lt.LinasJu.Utils.MathUtils;
 
@@ -57,18 +60,18 @@ public class CrossoverRepo {
         Gene childTwo = new Gene(parentTwo.getDurationOfPhases());
 
         //maps to make path for replacing duplicates
-        Map<Long, Long> mapOne = new HashMap<>();
-        Map<Long, Long> mapTwo = new HashMap<>();
+        Map<MapItemForDuplicates, MapItemForDuplicates> mapOne = new HashMap<>();
+        Map<MapItemForDuplicates, MapItemForDuplicates> mapTwo = new HashMap<>();
 
         for (int alleleNo = firstCrossoverPoint; alleleNo < secondCrossoverPoint; alleleNo++) {
             Long phaseParentOne = parentOne.getDurationOfPhases().get(alleleNo).getPhaseDuration();
             Long phaseParentTwo = parentTwo.getDurationOfPhases().get(alleleNo).getPhaseDuration();
 
             childOne.getDurationOfPhases().get(alleleNo).setPhaseDuration(phaseParentTwo);
-            mapOne.put(phaseParentTwo, phaseParentOne);
+            mapOne.put(new MapItemForDuplicates(alleleNo, phaseParentTwo), new MapItemForDuplicates(alleleNo, phaseParentOne));
 
             childTwo.getDurationOfPhases().get(alleleNo).setPhaseDuration(phaseParentOne);
-            mapTwo.put(phaseParentOne, phaseParentTwo);
+            mapTwo.put(new MapItemForDuplicates(alleleNo, phaseParentOne), new MapItemForDuplicates(alleleNo, phaseParentTwo));
         }
 
         //changing duplicates before first and after second crossover point
@@ -82,13 +85,20 @@ public class CrossoverRepo {
         return Arrays.asList(childOne, childTwo);
     }
 
-    private void changeDuplicatesInChild(Gene childOne, Gene childTwo, Map<Long, Long> mapOne, Map<Long, Long> mapTwo, int index) {
-        while (mapOne.get(childOne.getDurationOfPhases().get(index).getPhaseDuration()) != null) {
-            childOne.getDurationOfPhases().get(index).setPhaseDuration(mapOne.get(childOne.getDurationOfPhases().get(index).getPhaseDuration()));
-        }
+    private void changeDuplicatesInChild(Gene childOne, Gene childTwo, Map<MapItemForDuplicates, MapItemForDuplicates> mapOne, Map<MapItemForDuplicates, MapItemForDuplicates> mapTwo, int index) {
+        removeDuplicates(childOne, mapOne, index);
+        removeDuplicates(childTwo, mapTwo, index);
+    }
 
-        while (mapTwo.get(childTwo.getDurationOfPhases().get(index).getPhaseDuration()) != null) {
-            childTwo.getDurationOfPhases().get(index).setPhaseDuration(mapTwo.get(childOne.getDurationOfPhases().get(index).getPhaseDuration()));
+    private void removeDuplicates(Gene child, Map<MapItemForDuplicates, MapItemForDuplicates> mapOfDuplicates, int index) {
+        List<MapItemForDuplicates> itemsRemovedDFromMap = new ArrayList<>();
+        for (Map.Entry<MapItemForDuplicates, MapItemForDuplicates> entry : mapOfDuplicates.entrySet()) {
+            MapItemForDuplicates mapItemForDuplicates = entry.getKey();
+            MapItemForDuplicates mapItemForDuplicates2 = entry.getValue();
+            if (mapItemForDuplicates.getPhaseDuration().equals(child.getDurationOfPhases().get(index).getPhaseDuration()) && !itemsRemovedDFromMap.contains(mapItemForDuplicates)) {
+                child.getDurationOfPhases().get(index).setPhaseDuration(mapItemForDuplicates2.getPhaseDuration());
+                itemsRemovedDFromMap.add(mapItemForDuplicates);
+            }
         }
     }
 
@@ -115,4 +125,12 @@ public class CrossoverRepo {
     private void useAlternatingPositionCrossover(List<Gene> allGenes) {
 
     }
+}
+
+@Getter
+@Setter
+@AllArgsConstructor
+class MapItemForDuplicates {
+    private Integer indexOfPlaceInGene;
+    private Long PhaseDuration;
 }

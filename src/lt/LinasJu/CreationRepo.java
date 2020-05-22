@@ -1,10 +1,10 @@
 package lt.LinasJu;
 
 import lombok.SneakyThrows;
+import lt.LinasJu.Entities.GeneticAlgorithm.Gene;
 import lt.LinasJu.Utils.ShellExec;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -184,7 +184,7 @@ public class CreationRepo {
             if (myObj.createNewFile()) {
                 System.out.println("File created: " + myObj.getName());
             } else {
-                System.out.println("File " + myObj.getName() + " already exists.");
+//                System.out.println("File " + myObj.getName() + " already exists.");
             }
         } catch (IOException e) {
             System.out.println("An error occurred.");
@@ -205,6 +205,52 @@ public class CreationRepo {
         shellExec.execute(SumoCommandsEnum.NETCONVERT.toString(), workingDir, true, args.toArray(String[]::new));
 //        System.out.println(shellExec.getOutput()); used for debugging
 //        System.out.println(shellExec.getError());
+    }
+
+    @SneakyThrows
+    public void exportDataToVisualiseToCsv(List<Map<Gene, Double>> listOfEveryPopulationGenesWithFitnessScore, String fileName) {
+        List<Double> resultList = getBestIterationsPopulationsFitnesses(listOfEveryPopulationGenesWithFitnessScore);
+
+        FileWriter fileWriter = new FileWriter(fileName);
+
+        try {
+            for (int iteration = 0; iteration < resultList.size(); iteration++) {
+                Double result = resultList.get(iteration);
+                fileWriter.append(String.valueOf(iteration));
+                fileWriter.append(',');
+                fileWriter.append(result.toString());
+                fileWriter.append('\n');
+            }
+
+            System.out.println("Write CSV successfully!");
+        } catch (Exception e) {
+            System.out.println("Writing CSV error!");
+            e.printStackTrace();
+        } finally {
+            try {
+                fileWriter.flush();
+                fileWriter.close();
+            } catch (IOException e) {
+                System.out.println("Flushing/closing error!");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private List<Double> getBestIterationsPopulationsFitnesses(List<Map<Gene, Double>> listOfEveryPopulationGenesWithFitnessScore) {
+        List<Double> resultList = new ArrayList<>();
+        listOfEveryPopulationGenesWithFitnessScore.forEach(geneDoubleMap -> {
+            Double biggestFitnessScoreOfPopulation = 0d;
+
+            for (Map.Entry<Gene, Double> entry : geneDoubleMap.entrySet()) {
+                Double aDouble = entry.getValue();
+                if (aDouble > biggestFitnessScoreOfPopulation) {
+                    biggestFitnessScoreOfPopulation = aDouble;
+                }
+            }
+            resultList.add(biggestFitnessScoreOfPopulation);
+        });
+        return resultList;
     }
 
 }

@@ -4,6 +4,7 @@ import lt.LinasJu.Entities.GeneticAlgorithm.Allele;
 import lt.LinasJu.Entities.GeneticAlgorithm.Gene;
 import lt.LinasJu.Utils.MathUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MutationRepo {
@@ -35,10 +36,11 @@ public class MutationRepo {
         int firstPoint = crossoverPoints.get(0);
         int secondPoint = crossoverPoints.get(1);
 
-        List<Allele> sublistToBeDisplaced = gene.getDurationOfPhases().subList(firstPoint, secondPoint);
+        List<Allele> sublistToBeDisplaced = new ArrayList<>(gene.getDurationOfPhases().subList(firstPoint, secondPoint));
         gene.getDurationOfPhases().subList(firstPoint, secondPoint).clear();
 
-        gene.getDurationOfPhases().addAll(MathUtils.getRandomIntSmallerThan(gene.getDurationOfPhases().size()), sublistToBeDisplaced);
+        int place = MathUtils.getRandomIntSmallerThan(gene.getDurationOfPhases().size());
+        gene.getDurationOfPhases().addAll(place, sublistToBeDisplaced);
     }
 
     private void useExchangeMutation(Gene gene) {

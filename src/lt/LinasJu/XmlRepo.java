@@ -98,7 +98,7 @@ public class XmlRepo {
 
             transformer.transform(source, result);
 
-            System.out.println("File " + outputFileName + " saved!");
+            System.out.println("    File " + outputFileName + " saved!");
 
         } catch (ParserConfigurationException | TransformerException pce) {
             pce.printStackTrace();
@@ -206,7 +206,6 @@ public class XmlRepo {
     }
 
     public Network getNetworkFromGeneratedXmlNetworkFiles(String workingDirectory, String fileName) {
-
         String fileNameBase = workingDirectory + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd();
 
         Document nodeDocument = readXml(fileNameBase + FilesSuffixesEnum.NODES.toString());
@@ -241,6 +240,8 @@ public class XmlRepo {
         network.setConnections(connections);
         network.setTrafficLightLogics(TlLogics);
         network.setTrafficLightLogicsConnections(TLLogicsConnections);
+
+        System.out.println("Network entity generated successfully. ");
         return network;
     }
 

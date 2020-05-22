@@ -3,7 +3,10 @@ package lt.LinasJu.GeneticAlgorithm.GeneticOperators;
 import lt.LinasJu.Entities.GeneticAlgorithm.Gene;
 import lt.LinasJu.Utils.MapUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -13,23 +16,22 @@ public class SelectionRepo {
 
     public List<List<Gene>> getGenePairsBySelectionType(Map<Gene, Double> populationWithFitnesses, SelectionType type) {
         List<List<Gene>> genePairs = new ArrayList<>();
-
-        switch (type) {
-            case PROPORTIONATE:
-                for (int pairNo = 0; pairNo < populationWithFitnesses.size()/2; pairNo++) {
-                    List<Gene> genePair = new ArrayList<>();
-                    for(int i = 0; i < 2; i++) {
+        for (int pairNo = 0; pairNo < populationWithFitnesses.size()/2; pairNo++) {
+            List<Gene> genePair = new ArrayList<>();
+            for(int i = 0; i < 2; i++) {
+                switch (type) {
+                    case PROPORTIONATE:
                         genePair.add(useProportionateSelection(populationWithFitnesses));
-                    }
-                    genePairs.add(genePair);
+                        break;
+                    case RANKING:
+                        genePair.add(useRankingSelection(populationWithFitnesses));
+                    case TOURNAMENT:
+                        genePair.add(useTournamentSelection(populationWithFitnesses));
+                    default:
+                        throw new IllegalStateException("Unexpected value or not yet implemented: " + type);
                 }
-                break;
-            case RANKING:
-
-            case TOURNAMENT:
-
-            default:
-                throw new IllegalStateException("Unexpected value or not yet implemented: " + type);
+            }
+            genePairs.add(genePair);
         }
 
         return genePairs;
@@ -37,7 +39,7 @@ public class SelectionRepo {
 
     private Gene useProportionateSelection(Map<Gene, Double> populationWithFitnesses) {
         //mandatory sort for getting correct order by score values
-        populationWithFitnesses = MapUtils.sortByValue(populationWithFitnesses);
+        populationWithFitnesses = MapUtils.sortByValueAsc(populationWithFitnesses); //genes with best (biggest) fitness values will be in the beginning
 
         Double sumOfFitnessScores = populationWithFitnesses.values().stream().mapToDouble(value -> value).sum();
 
@@ -47,6 +49,8 @@ public class SelectionRepo {
             probabilityToBegin += entry.getValue() / sumOfFitnessScores; //getting every Gene proportion
             genesWithProbability.put(entry.getKey(), probabilityToBegin);
         }
+
+        genesWithProbability = MapUtils.sortByValueAsc(genesWithProbability);
 
         double randomDouble = ThreadLocalRandom.current().nextDouble(probabilityToBegin);
 
@@ -59,11 +63,54 @@ public class SelectionRepo {
         return null;
     }
 
-    private void useRankingSelection(Map<Gene, Double> populationWithFitnesses) {
+    private Gene useRankingSelection(Map<Gene, Double> populationWithFitnesses) {
+        //mandatory sort for getting correct order by score values
+        populationWithFitnesses = MapUtils.sortByValueDesc(populationWithFitnesses); //genes with worst (smallest) fitness values will be in the beginning
 
+        Map<Integer, Gene> genesWithRank = new HashMap<>();
+        int rank = 1;
+        for (Map.Entry<Gene, Double> entry : populationWithFitnesses.entrySet()) {
+            genesWithRank.put(rank, entry.getKey());
+            rank += 1;
+        }
+
+        int sum = genesWithRank.keySet().stream().reduce(0, Integer::sum);
+        int randomNumber = ThreadLocalRandom.current().nextInt(sum);
+
+        int countingSum = 0;
+        for (Map.Entry<Integer, Gene> entry : genesWithRank.entrySet()) {
+            countingSum += entry.getKey();
+            if (randomNumber < countingSum) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
-    private void useTournamentSelection(Map<Gene, Double> populationWithFitnesses) {
+    private Gene useTournamentSelection(Map<Gene, Double> populationWithFitnesses) {
+        //mandatory sort for getting correct order by score values
+        populationWithFitnesses = MapUtils.sortByValueAsc(populationWithFitnesses); //genes with best (biggest) fitness values will be in the beginning
 
+        List<Gene> listOfGenes = new ArrayList<>(populationWithFitnesses.keySet());
+        int howManyToChoose = ThreadLocalRandom.current().nextInt(listOfGenes.size());
+        Map<Gene, Double> chosenGenes = new HashMap<>();
+
+        for (int i  = 0; i < howManyToChoose; i++) {
+            Gene gene = listOfGenes.get(ThreadLocalRandom.current().nextInt(listOfGenes.size()));
+            listOfGenes.remove(gene);
+            chosenGenes.put(gene, populationWithFitnesses.get(gene));
+        }
+
+        chosenGenes = MapUtils.sortByValueAsc(chosenGenes);
+
+        Gene geneToReturn = new Gene();
+        Double genesFitness = 0d;
+        for (Map.Entry<Gene, Double> entry : chosenGenes.entrySet()) {
+            if(entry.getValue() > genesFitness) {
+                genesFitness = entry.getValue();
+                geneToReturn = entry.getKey();
+            }
+        }
+        return geneToReturn;
     }
 }
