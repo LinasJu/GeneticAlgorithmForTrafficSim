@@ -160,9 +160,9 @@ public class CreationRepo {
 //        String simulationOutputFileName = fileName + "SimulationOutput.txt"; for debugging
 //        createEmptyFile(workingDir + simulationOutputFileName);
         List<String> simulationArgs = getSimulationOutputCommandArgs(fileName, outputDataFilesEnums);
-        shellExec.execute(SumoCommandsEnum.SUMO.toString(), workingDir, true, simulationArgs.toArray(String[]::new)); // 4. simulate and generate output
-        System.out.println(shellExec.getOutput());
-        System.out.println(shellExec.getError());
+        shellExec.execute(SumoCommandsEnum.SUMO.toString(), workingDir, true, simulationArgs.toArray(String[]::new)); // 4. run simulation and generate output
+//        System.out.println(shellExec.getOutput()); used for debugging
+//        System.out.println(shellExec.getError());
     }
 
     //used for editing. generates nodes, edges, connections, traffic light logic and type of edges files
@@ -174,8 +174,8 @@ public class CreationRepo {
         args.add(SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.toString() + fileName + SumoOutputDataFilesEnum.OUTPUT_FOR_EDITING.getFileEnd());
 
         shellExec.execute(SumoCommandsEnum.NETCONVERT.toString(), workingDir, true, args.toArray(String[]::new));
-        System.out.println(shellExec.getOutput());
-        System.out.println(shellExec.getError());
+//        System.out.println(shellExec.getOutput()); used for debugging
+//        System.out.println(shellExec.getError());
     }
 
     public void createEmptyFile(String fileNameWithPath) {

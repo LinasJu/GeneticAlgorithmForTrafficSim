@@ -55,9 +55,11 @@ public class Main {
         List<Gene> populationOfGenes = gaRepo.getRandomPopulationOfGenesByTlLogics(theNetwork.getTrafficLightLogics(), sizeOfPopulation);
 
         for (int iterationNo = 0; iterationNo < maxIterations; iterationNo++) {
-
+            System.out.println("Start of iteration " + iterationNo + " from " + maxIterations);
             Map<Gene, Double> populationGenesWithTheirFitnessScore = new HashMap<>();
             for (int geneIteration = 0; geneIteration < populationOfGenes.size(); geneIteration++) {
+                System.out.println("    Generation no.:" + geneIteration);
+
                 String fileName = geneIteration == 0 ? baseFileName : baseFileName + iterationNo;
                 Gene gene = populationOfGenes.get(geneIteration);
                 creationRepo.createSumoConfigFile(fileName, routeFileName); // 3. setup SUMO configuration file
@@ -78,11 +80,11 @@ public class Main {
 
                 creationRepo.createNetworkFromNetworkFiles(baseFileName + iterationNo, fileTypesToCreateNetworkFrom);
             }
+            System.out.println("    " + iterationNo + "iteration simulations run successfully");
+
             listOfEveryPopulationGenesWithFitnessScore.add(populationGenesWithTheirFitnessScore);
 
-            populationOfGenes = gaRepo.modifyPopulationOfGenes(populationGenesWithTheirFitnessScore); //modifying and getting new population of genes to work with
-
-            //todo edit network with genetic algorithm (fitness function, atrinkimas, kryzminimas, mutacija)
+            populationOfGenes = gaRepo.modifyPopulationOfGenes(populationGenesWithTheirFitnessScore); //modifying and getting new population of genes to work with in next generation
         }
     }
 

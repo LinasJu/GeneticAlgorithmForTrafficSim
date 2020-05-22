@@ -5,20 +5,20 @@ import lt.LinasJu.Entities.GeneticAlgorithm.Gene;
 import lt.LinasJu.Entities.SimulationOutputData.Vehicle;
 import lt.LinasJu.Entities.TlLogics.Phase;
 import lt.LinasJu.Entities.TlLogics.TlLogic;
+import lt.LinasJu.GeneticAlgorithm.GeneticOperators.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class GeneticAlgorithmRepo {
 
-    GeneticAlgorithmSelectionRepo gaSelectionRepo = new GeneticAlgorithmSelectionRepo();
+    SelectionRepo gaSelectionRepo = new SelectionRepo();
+    CrossoverRepo gaCrossoverRepo = new CrossoverRepo();
+    MutationRepo gaMutationRepo = new MutationRepo();
 
     private Long maxPhaseDuration = 300L;
     private Long minPhaseDuration = 1L;
-    private static double mutationRate = 0.05;
+    private static double mutationRate = 0.1;
     private static double crossoverRate = 1; //optional. usually crossover is always applied
 
     //the lowest fitness is the best
@@ -43,10 +43,7 @@ public class GeneticAlgorithmRepo {
         for (TlLogic tlLogic : tlLogics) {
             for (int i = 0; i < tlLogic.getPhase().size(); i++) {
                 Phase phase = tlLogic.getPhase().get(i);
-                Allele allele = new Allele();
-                allele.setPhaseDuration(phase.getDuration());
-                allele.setTlLogicId(tlLogic.getId());
-                allele.setTlLogicsPhaseListId(i);
+                Allele allele = new Allele(phase.getDuration(), tlLogic.getId(), i);
                 alleles.add(allele);
             }
         }
@@ -84,10 +81,7 @@ public class GeneticAlgorithmRepo {
     private List<Allele> generateNewRandomDurations(List<Allele> alleles) {
         List<Allele> newAlleles = new ArrayList<>();
         alleles.forEach(allele -> {
-            Allele newAllele = new Allele();
-            newAllele.setTlLogicId(allele.getTlLogicId());
-            newAllele.setTlLogicsPhaseListId(allele.getTlLogicsPhaseListId());
-            newAllele.setPhaseDuration(generateRandomDurationInRange());
+            Allele newAllele = new Allele(generateRandomDurationInRange(), allele.getTlLogicId(), allele.getTlLogicsPhaseListId());
             newAlleles.add(newAllele);
         });
         return newAlleles;
@@ -97,7 +91,7 @@ public class GeneticAlgorithmRepo {
         List<Gene> genes = new ArrayList<>();
         Gene baseGene = convertTlLogicsToGene(tlLogics);
 
-        genes.add(baseGene); //first gene with be from TlLogics
+        genes.add(baseGene); //first gene will be from TlLogics
 
         for (int i = 1; i < sizeOfPopulation; i++) {
             Gene newRandomGene = new Gene();
@@ -114,9 +108,16 @@ public class GeneticAlgorithmRepo {
     //modifying gene population for trying to get better fitness score
     public List<Gene> modifyPopulationOfGenes(Map<Gene, Double> populationGenesWithTheirFitnessScore) {
 
-      //  gaSelectionRepo.getPairsOfGenes(populationGenesWithTheirFitnessScore, )
-        //todo
+        List<List<Gene>> listOfGenePairs = gaSelectionRepo.getGenePairsBySelectionType(populationGenesWithTheirFitnessScore, SelectionType.PROPORTIONATE);
 
-        return null;
+        List<Gene> newPopulation = gaCrossoverRepo.getNewPopulationOfGenesByCrossoverType(listOfGenePairs, CrossoverType.PARTIALLY_MAPPED);
+
+        newPopulation.forEach(gene -> {
+            if (ThreadLocalRandom.current().nextDouble() <= mutationRate) {
+                gaMutationRepo.mutateGeneByMutationType(gene, MutationType.DISPLACEMENT);
+            }
+        });
+
+        return newPopulation;
     }
 }

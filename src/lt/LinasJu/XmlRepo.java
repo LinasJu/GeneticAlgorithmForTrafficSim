@@ -98,7 +98,7 @@ public class XmlRepo {
 
             transformer.transform(source, result);
 
-            System.out.println("File saved!");
+            System.out.println("File " + outputFileName + " saved!");
 
         } catch (ParserConfigurationException | TransformerException pce) {
             pce.printStackTrace();
