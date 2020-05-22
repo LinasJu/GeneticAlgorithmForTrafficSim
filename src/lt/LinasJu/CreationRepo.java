@@ -203,8 +203,8 @@ public class CreationRepo {
         args.add(fileName + FilesSuffixesEnum.NETWORK.toString());
 
         shellExec.execute(SumoCommandsEnum.NETCONVERT.toString(), workingDir, true, args.toArray(String[]::new));
-        System.out.println(shellExec.getOutput());
-        System.out.println(shellExec.getError());
+//        System.out.println(shellExec.getOutput()); used for debugging
+//        System.out.println(shellExec.getError());
     }
 
 }
