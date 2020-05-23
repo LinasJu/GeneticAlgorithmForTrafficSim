@@ -81,7 +81,6 @@ public class CreationRepo {
         return args.toArray(new String[0]);
     }
 
-
     /**
  * @param networkFileName network file name
      * @param routeFileName   route file name
@@ -123,7 +122,16 @@ public class CreationRepo {
         beginValue = beginValue != null ? beginValue : 0;
         endValue = endValue != null ? endValue : 1000;
 
-        return Arrays.asList("<configuration>", "<input>", "<net-file value=\"" + networkName + "\"/>", "<route-files value=\"" + routeName + "\"/>", "</input>", "<time>", "<begin value =\"" + beginValue + "\"/>", "<end value=\"" + endValue + "\"/>", "</time>", "</configuration>");
+        return Arrays.asList("<configuration>",
+                "<input>",
+                "<net-file value=\"" + networkName + "\"/>",
+                "<route-files value=\"" + routeName + "\"/>",
+                "</input>",
+                "<time>",
+                "<begin value =\"" + beginValue + "\"/>",
+                "<end value=\"" + endValue + "\"/>",
+                "</time>",
+                "</configuration>");
     }
 
     public List<String> getSimulationOutputCommandArgs(String fileName, List<SumoOutputDataFilesEnum> outputDataFilesEnums) {
@@ -208,9 +216,20 @@ public class CreationRepo {
     }
 
     @SneakyThrows
-    public void exportDataToVisualiseToCsv(List<Map<Gene, Double>> listOfEveryPopulationGenesWithFitnessScore, String fileName) {
-        List<Double> resultList = getBestIterationsPopulationsFitnesses(listOfEveryPopulationGenesWithFitnessScore);
+    public void exportDataToVisualiseToCsv(Map<Gene, Double> populationGenesWithTheirFitnessScore, String fileName) {
+        List<Double> resultList = new ArrayList<>(populationGenesWithTheirFitnessScore.values());
 
+        writingDataToFile(fileName, resultList);
+    }
+
+    @SneakyThrows
+    public void exportDataToVisualiseToCsv(List<Map<Gene, Double>> listOfEveryPopulationGenesWithFitnessScore, String fileName) {
+        List<Double> resultList = getBestGenesFitnessesOfIterations(listOfEveryPopulationGenesWithFitnessScore);//extracts one best gene fitness form every iteration
+
+        writingDataToFile(fileName, resultList);
+    }
+
+    private void writingDataToFile(String fileName, List<Double> resultList) throws IOException {
         FileWriter fileWriter = new FileWriter(fileName);
 
         try {
@@ -237,7 +256,7 @@ public class CreationRepo {
         }
     }
 
-    private List<Double> getBestIterationsPopulationsFitnesses(List<Map<Gene, Double>> listOfEveryPopulationGenesWithFitnessScore) {
+    private List<Double> getBestGenesFitnessesOfIterations(List<Map<Gene, Double>> listOfEveryPopulationGenesWithFitnessScore) {
         List<Double> resultList = new ArrayList<>();
         listOfEveryPopulationGenesWithFitnessScore.forEach(geneDoubleMap -> {
             Double biggestFitnessScoreOfPopulation = 0d;
