@@ -77,7 +77,7 @@ public class Main {
                 System.out.println(iterationNo + " iteration simulations ran successfully.");
 
                 listOfEveryPopulationGenesWithFitnessScore.add(populationGenesWithTheirFitnessScore);
-                creationRepo.exportDataToVisualiseToCsv(populationGenesWithTheirFitnessScore, selectionType.toString() + "_iteration_" + iterationNo + "_GenaiSuFitnesais.csv");
+                creationRepo.exportDataToVisualiseToCsv(populationGenesWithTheirFitnessScore, selectionType.toString() + "_GO iteration_" + iterationNo + "_GenaiSuFitnesais.csv");
 
                 System.out.println("Modifying population No. " + iterationNo + "...");
                 populationOfGenes = gaRepo.modifyPopulationOfGenes(populationGenesWithTheirFitnessScore, selectionType); //modifying and getting new population of genes to work with in next generation

@@ -25,8 +25,10 @@ public class SelectionRepo {
                         break;
                     case RANKING:
                         genePair.add(useRankingSelection(populationWithFitnesses));
+                        break;
                     case TOURNAMENT:
                         genePair.add(useTournamentSelection(populationWithFitnesses));
+                        break;
                     default:
                         throw new IllegalStateException("Unexpected value or not yet implemented: " + type);
                 }
