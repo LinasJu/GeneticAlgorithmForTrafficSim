@@ -3,10 +3,12 @@ package lt.LinasJu.GeneticAlgorithm.GeneticOperators;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lt.LinasJu.Entities.GeneticAlgorithm.Allele;
 import lt.LinasJu.Entities.GeneticAlgorithm.Gene;
 import lt.LinasJu.Utils.MathUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Crossover functions are dedicated to cross a pair of parents by different techniques to get new childs
@@ -18,9 +20,9 @@ public class CrossoverRepo {
             case PARTIALLY_MAPPED:
                 return usePartiallyMappedCrossover(parentGenes);
             case CYCLE:
-
+                return useCycleCrossover(parentGenes);//todo
             case ORDER_BASED_1:
-
+                return useOrderBasedCrossover1(parentGenes);
             case ORDER_BASED_2:
 
             case POSITION_BASED:
@@ -100,27 +102,98 @@ public class CrossoverRepo {
         }
     }
 
-    private void useCycleCrossover(List<Gene> pairOfGenes) {
+    private Gene useCycleCrossover(List<Gene> pairOfGenes) {//todo
+       /* Gene parentOne = pairOfGenes.get(0);
+        Gene parentTwo = pairOfGenes.get(1);
+
+        if (parentOne.getDurationOfPhases().size() != parentTwo.getDurationOfPhases().size()) {
+            throw new IllegalArgumentException("Cannot perform partially-mapped crossover with different length parents.");
+        }
+
+        Allele firstAllele = parentOne.getDurationOfPhases().get(0);
+
+        parentTwo.getDurationOfPhases().forEach(allele -> {
+            if (allele.getPhaseDuration() == firstAllele.getPhaseDuration()) {
+
+            }
+        });*/
+        return null;
 
     }
 
-    private void useOrderBasedCrossover1(List<Gene> pairOfGenes) {
+    private Gene useOrderBasedCrossover1(List<Gene> pairOfGenes) {
+        Gene parentOne = pairOfGenes.get(0);
+        Gene parentTwo = pairOfGenes.get(1);
 
+        if (parentOne.getDurationOfPhases().size() != parentTwo.getDurationOfPhases().size()) {
+            throw new IllegalArgumentException("Cannot perform partially-mapped crossover with different length parents.");
+        }
+
+        //generating random beginning and end of gene alleles to cross
+        List<Integer> crossoverPoints = MathUtils.getTwoRandomIntPointsSmallerThan(parentOne.getDurationOfPhases().size());
+        int firstCrossoverPoint = crossoverPoints.get(0);
+        int secondCrossoverPoint = crossoverPoints.get(1);
+
+        List<Allele> parentOneSublist = parentOne.getDurationOfPhases().subList(firstCrossoverPoint, secondCrossoverPoint);
+
+        Gene childGene = new Gene(parentTwo.getDurationOfPhases());
+        for (int i = firstCrossoverPoint; i < secondCrossoverPoint; i++) {
+            childGene.getDurationOfPhases().set(i, parentOne.getDurationOfPhases().get(i));
+        }
+
+        for (int i = secondCrossoverPoint; i < parentOne.getDurationOfPhases().size(); i++) {
+            Allele alleleToInput = parentTwo.getDurationOfPhases().get(i);
+            int iterateTillListEnd = i;
+            int valueForIteratableNotToBeBiggerThan = parentOne.getDurationOfPhases().size();
+            //while second parents fields has same value as there is in sublist, skip to other till list end.
+            while (parentOneSublist.stream().map(Allele::getPhaseDuration).collect(Collectors.toList()).contains(alleleToInput.getPhaseDuration()) && iterateTillListEnd < valueForIteratableNotToBeBiggerThan) {
+                alleleToInput = parentTwo.getDurationOfPhases().get(iterateTillListEnd);
+                iterateTillListEnd++;
+                //starting from the beggining, if there is still no chosen at the end of the list.
+                if (iterateTillListEnd == parentOne.getDurationOfPhases().size()) {
+                    iterateTillListEnd = 0;
+                    valueForIteratableNotToBeBiggerThan = firstCrossoverPoint;
+                }
+            }
+            childGene.getDurationOfPhases().set(i, alleleToInput);
+            parentOneSublist.add(alleleToInput);//not to choose the same allele couple of times
+        }
+
+
+        for (int i = 0; i < firstCrossoverPoint ; i++) {
+            Allele alleleToInput = parentTwo.getDurationOfPhases().get(i);
+            int iterateTillCrossoverPoint = i;
+            int valueNotToBeBiggerThan = firstCrossoverPoint;
+            while (parentOneSublist.stream().map(Allele::getPhaseDuration).collect(Collectors.toList()).contains(alleleToInput.getPhaseDuration()) && iterateTillCrossoverPoint < valueNotToBeBiggerThan) {
+                alleleToInput = parentTwo.getDurationOfPhases().get(iterateTillCrossoverPoint);
+                iterateTillCrossoverPoint++;
+                //starting from the second point, if there is still no chosen at the end of the list.
+                if (iterateTillCrossoverPoint == firstCrossoverPoint) {
+                    iterateTillCrossoverPoint = secondCrossoverPoint;
+                    valueNotToBeBiggerThan = parentOne.getDurationOfPhases().size();
+                }
+            }
+
+            childGene.getDurationOfPhases().set(i, alleleToInput);
+            parentOneSublist.add(alleleToInput);//not to choose the same allele couple of times
+        }
+
+        return childGene;
     }
 
     private void useOrderBasedCrossover2(List<Gene> pairOfGenes) {
-
+        //todo
     }
 
     private void usePositionBasedCrossover(List<Gene> pairOfGenes) {
-
+        //todo
     }
 
     private void useVotingRecombinationCrossover(List<Gene> allGenes) {
-
+        //todo
     }
 
-    private void useAlternatingPositionCrossover(List<Gene> allGenes) {
+    private void useAlternatingPositionCrossover(List<Gene> pairOfGenes) {
 
     }
 }
