@@ -13,12 +13,10 @@ import java.util.*;
  */
 public class CrossoverRepo {
 
-    public List<Gene> getNewPopulationOfGenesByCrossoverType(List<List<Gene>> listOfGenePairs, CrossoverType type) {
-        List<Gene> newPopulation = new ArrayList<>();
+    public Gene getNewGeneByCrossoverType(List<Gene> parentGenes, CrossoverType type) {
         switch (type) {
             case PARTIALLY_MAPPED:
-                listOfGenePairs.forEach(pairOfGenes -> newPopulation.addAll(usePartiallyMappedCrossover(pairOfGenes)));
-                break;
+                return usePartiallyMappedCrossover(parentGenes);
             case CYCLE:
 
             case ORDER_BASED_1:
@@ -35,11 +33,10 @@ public class CrossoverRepo {
                 throw new IllegalStateException("Unexpected value or not yet implemented: " + type);
         }
 
-        return newPopulation;
     }
 
     //crossover functions
-    private List<Gene> usePartiallyMappedCrossover(List<Gene> pairOfGenes) {
+    private Gene usePartiallyMappedCrossover(List<Gene> pairOfGenes) {
         Gene parentOne = pairOfGenes.get(0);
         Gene parentTwo = pairOfGenes.get(1);
 
@@ -82,7 +79,8 @@ public class CrossoverRepo {
             changeDuplicatesInChild(childOne, childTwo, mapOne, mapTwo, i);
         }
 
-        return Arrays.asList(childOne, childTwo);
+//        return Arrays.asList(childOne, childTwo);
+        return childOne;
     }
 
     private void changeDuplicatesInChild(Gene childOne, Gene childTwo, Map<MapItemForDuplicates, MapItemForDuplicates> mapOne, Map<MapItemForDuplicates, MapItemForDuplicates> mapTwo, int index) {

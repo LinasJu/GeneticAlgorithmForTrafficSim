@@ -16,20 +16,25 @@ public class GeneticAlgorithmRepo {
     CrossoverRepo gaCrossoverRepo = new CrossoverRepo();
     MutationRepo gaMutationRepo = new MutationRepo();
 
-    private Long maxPhaseDuration = 300L;
+    private Long maxPhaseDuration = 50L;
     private Long minPhaseDuration = 1L;
-    private static double mutationRate = 0.1;
+    private static double mutationRate = 0.2;
     private static double crossoverRate = 1; //optional. usually crossover is always applied
 
-    //the lowest fitness is the best
+    //the calculate fitness for gene
     public Double calculatefitness(List<Vehicle> vehicles) {
+        Double sumOfWaitings = calculateSumOfWaitingTimes(vehicles);
+        return sumOfWaitings == 0 ? Double.POSITIVE_INFINITY :  1/sumOfWaitings;
+    }
+
+    public Double calculateSumOfWaitingTimes(List<Vehicle> vehicles) {
         Double sum = 0d;
         for (Vehicle vehicle : vehicles) {
             for (Float waiting : vehicle.getWaitings()) {
                 sum += waiting;
             }
         }
-        return sum == 0 ? Double.POSITIVE_INFINITY :  1/sum;
+        return sum;
     }
 
     /**
@@ -91,9 +96,9 @@ public class GeneticAlgorithmRepo {
         List<Gene> genes = new ArrayList<>();
         Gene baseGene = convertTlLogicsToGene(tlLogics);
 
-        genes.add(baseGene); //first gene will be from TlLogics
+//        genes.add(baseGene); //first gene will be from TlLogics
 
-        for (int i = 1; i < sizeOfPopulation; i++) {
+        for (int i = 0; i < sizeOfPopulation; i++) {
             Gene newRandomGene = new Gene();
             newRandomGene.setDurationOfPhases(generateNewRandomDurations(baseGene.getDurationOfPhases()));
             genes.add(newRandomGene);
@@ -105,19 +110,16 @@ public class GeneticAlgorithmRepo {
         return ThreadLocalRandom.current().nextLong(minPhaseDuration, maxPhaseDuration + 1);
     }
 
-    //modifying gene population for trying to get better fitness score
-    public List<Gene> modifyPopulationOfGenes(Map<Gene, Double> populationGenesWithTheirFitnessScore, SelectionType selectionType) {
+    //modifying gene for trying to get better fitness score
+    public Gene getModifiedGeneFromPopulation(Map<Gene, Double> populationGenesWithTheirFitnessScore, SelectionType selectionType) {
 
-        List<List<Gene>> listOfGenePairs = gaSelectionRepo.getGenePairsBySelectionType(populationGenesWithTheirFitnessScore, selectionType);
+        List<Gene> parentGenes = gaSelectionRepo.getParentGenesBySelectionType(populationGenesWithTheirFitnessScore, selectionType);
+        Gene newGene = gaCrossoverRepo.getNewGeneByCrossoverType(parentGenes, CrossoverType.PARTIALLY_MAPPED);
 
-        List<Gene> newPopulation = gaCrossoverRepo.getNewPopulationOfGenesByCrossoverType(listOfGenePairs, CrossoverType.PARTIALLY_MAPPED);
+        if (ThreadLocalRandom.current().nextDouble() <= mutationRate) {
+            gaMutationRepo.mutateGeneByMutationType(newGene, MutationType.DISPLACEMENT);
+        }
 
-        newPopulation.forEach(gene -> {
-            if (ThreadLocalRandom.current().nextDouble() <= mutationRate) {
-                gaMutationRepo.mutateGeneByMutationType(gene, MutationType.DISPLACEMENT);
-            }
-        });
-
-        return newPopulation;
+        return newGene;
     }
 }

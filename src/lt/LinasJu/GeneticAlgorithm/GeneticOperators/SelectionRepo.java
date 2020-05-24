@@ -14,29 +14,25 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class SelectionRepo {
 
-    public List<List<Gene>> getGenePairsBySelectionType(Map<Gene, Double> populationWithFitnesses, SelectionType type) {
-        List<List<Gene>> genePairs = new ArrayList<>();
-        for (int pairNo = 0; pairNo < populationWithFitnesses.size()/2; pairNo++) {
-            List<Gene> genePair = new ArrayList<>();
-            for(int i = 0; i < 2; i++) {
-                switch (type) {
-                    case PROPORTIONATE:
-                        genePair.add(useProportionateSelection(populationWithFitnesses));
-                        break;
-                    case RANKING:
-                        genePair.add(useRankingSelection(populationWithFitnesses));
-                        break;
-                    case TOURNAMENT:
-                        genePair.add(useTournamentSelection(populationWithFitnesses));
-                        break;
-                    default:
-                        throw new IllegalStateException("Unexpected value or not yet implemented: " + type);
-                }
+    public List<Gene> getParentGenesBySelectionType(Map<Gene, Double> populationWithFitnesses, SelectionType type) {
+        List<Gene> genePair = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            switch (type) {
+                case PROPORTIONATE:
+                    genePair.add(useProportionateSelection(populationWithFitnesses));
+                    break;
+                case RANKING:
+                    genePair.add(useRankingSelection(populationWithFitnesses));
+                    break;
+                case TOURNAMENT:
+                    genePair.add(useTournamentSelection(populationWithFitnesses));
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value or not yet implemented: " + type);
             }
-            genePairs.add(genePair);
         }
 
-        return genePairs;
+        return genePair;
     }
 
     private Gene useProportionateSelection(Map<Gene, Double> populationWithFitnesses) {
@@ -54,7 +50,7 @@ public class SelectionRepo {
 
         genesWithProbability = MapUtils.sortByValueAsc(genesWithProbability);
 
-        double randomDouble = ThreadLocalRandom.current().nextDouble(probabilityToBegin);
+        double randomDouble = ThreadLocalRandom.current().nextDouble(probabilityToBegin/2, probabilityToBegin);
 
         for (Map.Entry<Gene, Double> entry : genesWithProbability.entrySet()) {
             Double aDouble = entry.getValue();
@@ -90,15 +86,13 @@ public class SelectionRepo {
     }
 
     private Gene useTournamentSelection(Map<Gene, Double> populationWithFitnesses) {
-        //mandatory sort for getting correct order by score values
-        populationWithFitnesses = MapUtils.sortByValueAsc(populationWithFitnesses); //genes with best (biggest) fitness values will be in the beginning
 
         List<Gene> listOfGenes = new ArrayList<>(populationWithFitnesses.keySet());
-        int howManyToChoose = ThreadLocalRandom.current().nextInt(listOfGenes.size());
+        int howManyToChoose = ThreadLocalRandom.current().nextInt(3, listOfGenes.size()); //from three till all
         Map<Gene, Double> chosenGenes = new HashMap<>();
 
         for (int i  = 0; i < howManyToChoose; i++) {
-            Gene gene = listOfGenes.get(ThreadLocalRandom.current().nextInt(listOfGenes.size()));
+            Gene gene = listOfGenes.get(ThreadLocalRandom.current().nextInt(1, listOfGenes.size())); //better size of list
             listOfGenes.remove(gene);
             chosenGenes.put(gene, populationWithFitnesses.get(gene));
         }

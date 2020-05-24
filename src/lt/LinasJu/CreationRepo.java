@@ -219,17 +219,17 @@ public class CreationRepo {
     public void exportDataToVisualiseToCsv(Map<Gene, Double> populationGenesWithTheirFitnessScore, String fileName) {
         List<Double> resultList = new ArrayList<>(populationGenesWithTheirFitnessScore.values());
 
-        writingDataToFile(fileName, resultList);
+        writingDataToFile(resultList, fileName);
     }
 
     @SneakyThrows
     public void exportDataToVisualiseToCsv(List<Map<Gene, Double>> listOfEveryPopulationGenesWithFitnessScore, String fileName) {
         List<Double> resultList = getBestGenesFitnessesOfIterations(listOfEveryPopulationGenesWithFitnessScore);//extracts one best gene fitness form every iteration
 
-        writingDataToFile(fileName, resultList);
+        writingDataToFile(resultList, fileName);
     }
 
-    private void writingDataToFile(String fileName, List<Double> resultList) throws IOException {
+    public void writingDataToFile(List<Double> resultList, String fileName) throws IOException {
         FileWriter fileWriter = new FileWriter(fileName);
 
         try {

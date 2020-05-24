@@ -1,11 +1,13 @@
 package lt.LinasJu;
 
+import lombok.SneakyThrows;
 import lt.LinasJu.Entities.GeneticAlgorithm.Gene;
 import lt.LinasJu.Entities.Network;
 import lt.LinasJu.Entities.SimulationOutputData.Vehicle;
 import lt.LinasJu.Entities.TlLogics.TlLogic;
 import lt.LinasJu.GeneticAlgorithm.GeneticAlgorithmRepo;
 import lt.LinasJu.GeneticAlgorithm.GeneticOperators.SelectionType;
+import lt.LinasJu.Utils.MapUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -32,7 +34,9 @@ public class Main {
             FilesSuffixesEnum.TYPE_OF_EDGES,
             FilesSuffixesEnum.CONNECTIONS,
             FilesSuffixesEnum.TRAFFIC_LIGHT_LOGICS);
+    public static List<SumoOutputDataFilesEnum> simulationOutputFileTypes = Collections.singletonList(SumoOutputDataFilesEnum.EMMISION_DATA);//kol kas pakanka emission informacijos
 
+    @SneakyThrows
     public static void main(String[] args) {
 
         LocalDateTime startOfProgram = LocalDateTime.now();
@@ -46,8 +50,6 @@ public class Main {
 
         creationRepo.createBaseInputFiles(baseFileName, isImportedNetwork); // creates routes for network and SUMO config file (if no network is declared - then network too)
 
-        List<SumoOutputDataFilesEnum> simulationOutputFileTypes = Collections.singletonList(SumoOutputDataFilesEnum.EMMISION_DATA);//kol kas pakanka emission informacijos
-
         //generates nodes, edges, connections, traffic light logic and type of edges files
         creationRepo.createPlainOutputFilesForEditingFromNetworkFile(baseFileName);
         //the main network from xml files that will be modified to get the best solution
@@ -57,63 +59,61 @@ public class Main {
         //Population must be the same while changing genetic operators to compare them objectively
         List<Gene> basePopulationOfGenes = new ArrayList<>(gaRepo.getRandomPopulationOfGenesByTlLogics(theNetwork.getTrafficLightLogics(), sizeOfPopulation));
 
+        Map<Gene, Double> basePopulationGenesWithFitnesses = new HashMap<>();
+
+        basePopulationOfGenes.forEach(gene -> {
+            List<TlLogic> newTlLogics = gaRepo.setNewTlLogicsPhaseDurationsWithGeneValues(gene, theNetwork.getTrafficLightLogics());
+            theNetwork.setTrafficLightLogics(newTlLogics);
+            xmlRepo.saveWholeNewNetworkToXmlFiles(workingDirectory, baseFileName, theNetwork); //export new network to xml files
+
+            creationRepo.createNetworkFromNetworkFiles(baseFileName, fileTypesToCreateNetworkFrom);
+            creationRepo.createSumoConfigFile(baseFileName, routeFileName); // 3. setup SUMO configuration file
+
+            creationRepo.runNetworkSimulationAndGetOutput(baseFileName, simulationOutputFileTypes); //get simulation output
+            List<Vehicle> simulationVehicles = simulationDataRepo.getVehiclesSimulationOutput(workingDirectory, baseFileName, simulationOutputFileTypes);
+
+            basePopulationGenesWithFitnesses.put(gene, gaRepo.calculatefitness(simulationVehicles));
+        });
+
         for (SelectionType selectionType : SelectionType.values()) {
-            List<Gene> populationOfGenes = new ArrayList<>(basePopulationOfGenes);
+            Map<Gene, Double> populationGenesWithFitnesses = new LinkedHashMap<>(basePopulationGenesWithFitnesses); //kad nereiktu perskaiciuoti tos pacios pirmos Sumos
 
-            List<Map<Gene, Double>> listOfEveryPopulationGenesWithFitnessScore = new ArrayList<>(); // to compare which Traffic light logic is the best
+            List<Double> listOfPopulationsIterationsfitnessesSum = new ArrayList<>();
+            listOfPopulationsIterationsfitnessesSum.add(basePopulationGenesWithFitnesses.values().stream().mapToDouble(Double::doubleValue).sum());
+
             for (int iterationNo = 0; iterationNo < maxIterations; iterationNo++) {
-                System.out.println("Start of iteration " + iterationNo + " from " + maxIterations);
+                String fileName = iterationNo == 0 ? baseFileName : baseFileName + iterationNo;
 
-                Map<Gene, Double> populationGenesWithTheirFitnessScore = new HashMap<>();
-                for (int geneIteration = 0; geneIteration < populationOfGenes.size(); geneIteration++) {
-                    IterationOfGene(creationRepo,
-                            simulationOutputFileTypes,
-                            theNetwork,
-                            populationOfGenes,
-                            iterationNo,
-                            populationGenesWithTheirFitnessScore,
-                            geneIteration);
+                Gene newModifiedGene = gaRepo.getModifiedGeneFromPopulation(populationGenesWithFitnesses, selectionType); //modifying and getting new population of genes to work with in next generation
+
+                List<TlLogic> newTlLogics = gaRepo.setNewTlLogicsPhaseDurationsWithGeneValues(newModifiedGene, theNetwork.getTrafficLightLogics());
+                theNetwork.setTrafficLightLogics(newTlLogics);
+                xmlRepo.saveWholeNewNetworkToXmlFiles(workingDirectory, fileName, theNetwork); //export new network to xml files
+
+                creationRepo.createNetworkFromNetworkFiles(fileName, fileTypesToCreateNetworkFrom);
+                creationRepo.createSumoConfigFile(fileName, routeFileName); // 3. setup SUMO configuration file
+                creationRepo.runNetworkSimulationAndGetOutput(fileName, simulationOutputFileTypes); //get simulation output
+
+                List<Vehicle> sortedSimulationVehicles = simulationDataRepo.getVehiclesSimulationOutput(workingDirectory, fileName, simulationOutputFileTypes);
+                populationGenesWithFitnesses = MapUtils.sortByValueDesc(populationGenesWithFitnesses);
+
+                Gene geneToRemove = new Gene();
+                //gausime paskutini gena
+                for (Map.Entry<Gene, Double> entry : populationGenesWithFitnesses.entrySet()) {
+                    geneToRemove = entry.getKey();
                 }
-                System.out.println(iterationNo + " iteration simulations ran successfully.");
 
-                listOfEveryPopulationGenesWithFitnessScore.add(populationGenesWithTheirFitnessScore);
-                creationRepo.exportDataToVisualiseToCsv(populationGenesWithTheirFitnessScore, selectionType.toString() + "_GO iteration_" + iterationNo + "_GenaiSuFitnesais.csv");
+                populationGenesWithFitnesses.remove(geneToRemove);
+                populationGenesWithFitnesses.put(newModifiedGene, gaRepo.calculatefitness(sortedSimulationVehicles));
 
-                System.out.println("Modifying population No. " + iterationNo + "...");
-                populationOfGenes = gaRepo.modifyPopulationOfGenes(populationGenesWithTheirFitnessScore, selectionType); //modifying and getting new population of genes to work with in next generation
-                System.out.println("Successfully modified population.");
+                listOfPopulationsIterationsfitnessesSum.add(populationGenesWithFitnesses.values().stream().mapToDouble(Double::doubleValue).sum());
+
             }
-
-            creationRepo.exportDataToVisualiseToCsv(listOfEveryPopulationGenesWithFitnessScore, selectionType.toString() + "_GeriausiuGenuFitnesas.csv");
+            creationRepo.writingDataToFile(listOfPopulationsIterationsfitnessesSum, selectionType.toString() + "_GO GenaiSuFitnesais.csv");
         }
 
         LocalDateTime endOfProgram = LocalDateTime.now();
         System.out.println("Program started: " + startOfProgram + ", program ended" + endOfProgram);
-    }
-
-    private static void IterationOfGene(CreationRepo creationRepo, List<SumoOutputDataFilesEnum> simulationOutputFileTypes, Network theNetwork, List<Gene> populationOfGenes, int iterationNo, Map<Gene, Double> populationGenesWithTheirFitnessScore, int geneIteration) {
-        System.out.println("    Running generation no.: " + geneIteration + "...");
-
-        String fileName = geneIteration == 0 ? baseFileName : baseFileName + iterationNo;
-        Gene gene = populationOfGenes.get(geneIteration);
-        creationRepo.createSumoConfigFile(fileName, routeFileName); // 3. setup SUMO configuration file
-
-        creationRepo.runNetworkSimulationAndGetOutput(fileName, simulationOutputFileTypes); //get simulation output
-
-        List<Vehicle> sortedSimulationVehicles = simulationDataRepo.getVehiclesSimulationOutput(workingDirectory, fileName, simulationOutputFileTypes);
-        populationGenesWithTheirFitnessScore.put(gene, gaRepo.calculatefitness(sortedSimulationVehicles));
-
-        List<TlLogic> newTlLogics = gaRepo.setNewTlLogicsPhaseDurationsWithGeneValues(gene, theNetwork.getTrafficLightLogics());
-        theNetwork.setTrafficLightLogics(newTlLogics);
-
-        if (geneIteration == 0) {
-            xmlRepo.saveWholeNewNetworkToXmlFiles(workingDirectory, baseFileName + iterationNo, theNetwork); //export new network to xml files
-        } else {
-            xmlRepo.saveNewTrafficLightLogicFileFromNetwork(workingDirectory, baseFileName + iterationNo, theNetwork); //export edited network TlLogic to xml file
-        }
-
-        creationRepo.createNetworkFromNetworkFiles(baseFileName + iterationNo, fileTypesToCreateNetworkFrom);
-        System.out.println("    Generation ran successfully.");
     }
 
     private static void getWorkingDirectoryAndFileName(String[] args) {
