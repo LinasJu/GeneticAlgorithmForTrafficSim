@@ -50,7 +50,7 @@ public class SelectionRepo {
 
         genesWithProbability = MapUtils.sortByValueAsc(genesWithProbability);
 
-        double randomDouble = ThreadLocalRandom.current().nextDouble(probabilityToBegin/2, probabilityToBegin);
+        double randomDouble = ThreadLocalRandom.current().nextDouble(probabilityToBegin);
 
         for (Map.Entry<Gene, Double> entry : genesWithProbability.entrySet()) {
             Double aDouble = entry.getValue();
