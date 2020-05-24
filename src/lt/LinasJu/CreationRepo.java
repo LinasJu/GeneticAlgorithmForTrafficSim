@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class CreationRepo {
-    public static String RANDOM_TRIPS_LOCATION = "C:\\Program Files (x86)\\Eclipse\\Sumo\\tools";
+    public static String RANDOM_TRIPS_LOCATION = "\"C:\\Program Files (x86)\\Eclipse\\Sumo\\tools\"";
 
     private String workingDir;
 

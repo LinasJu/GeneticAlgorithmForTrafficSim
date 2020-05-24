@@ -1,6 +1,8 @@
 package lt.LinasJu.Utils;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.StringJoiner;
 
 /**
  * Execute external process and optionally read output buffer.
@@ -38,11 +40,11 @@ public class ShellExec {
             cmdArr = new String[]{command};
         }
 
-        ProcessBuilder builder = new ProcessBuilder(cmdArr);
-        File workingDir = (workdir == null ? new File(command).getParentFile() : new File(workdir));
-        builder.directory(workingDir);
+        StringJoiner joiner = new StringJoiner(" ");
+        Arrays.asList(cmdArr).forEach(joiner::add);
 
-        Process process = builder.start();
+        File workingDir = (workdir == null ? new File(command).getParentFile() : new File(workdir));
+        Process process = Runtime.getRuntime().exec("cmd /C " + joiner.toString(), null, workingDir);
 
         // Consume streams, older jvm's had a memory leak if streams were not read,
         // some other jvm+OS combinations may block unless streams are consumed.
